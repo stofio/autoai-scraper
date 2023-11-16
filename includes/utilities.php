@@ -1,10 +1,9 @@
 <?php
 
-function addToPublishedList($title) {
+function addToPublishedList($url) {
     // Define the JSON file path
-    $filePath = plugin_dir_path(__FILE__) . 'last-article-track.json';
+    $filePath = dirname(plugin_dir_path(__FILE__)) . '/scraped_urls.json';
 
-    return;
 
     // Check if the file exists
     if (file_exists($filePath)) {
@@ -18,11 +17,12 @@ function addToPublishedList($title) {
     }
 
     // Add the new title to the array
-    $data[] = $title;
+    $data[] = $url;
 
     // Encode the array back into JSON
     $jsonData = json_encode($data, JSON_PRETTY_PRINT);
 
+    checkJsonSizeAndShorten();
 
     // Write the JSON data back to the file
     file_put_contents($filePath, $jsonData);
@@ -30,9 +30,9 @@ function addToPublishedList($title) {
 
 
 
-function isTitleInPublishedList($title) {
+function isUrlInPublishedList($title) {
     // Define the JSON file path
-    $filePath = plugin_dir_path(__FILE__) . 'last-article-track.json';
+    $filePath = dirname(plugin_dir_path(__FILE__)) . '/scraped_urls.json';
 
     // Check if the file exists
     if (!file_exists($filePath)) {
@@ -55,6 +55,33 @@ function isTitleInPublishedList($title) {
         return false;
     }
 }
+
+
+function checkJsonSizeAndShorten() {
+    $filePath = dirname(plugin_dir_path(__FILE__)) . '/scraped_urls.json';
+
+    if (file_exists($filePath)) {
+        $jsonData = file_get_contents($filePath);
+        $data = json_decode($jsonData, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            // Handle JSON decode error
+            my_second_log('ERROR', 'Error decoding JSON in checkJsonSizeAndShorten');
+            return;
+        }
+
+        // Check if there are more than 130 URLs
+        if (count($data) > 130) {
+            // Keep only the most recent 100 URLs
+            $data = array_slice($data, -100);
+
+            // Encode the array back into JSON
+            $jsonData = json_encode($data, JSON_PRETTY_PRINT);
+            file_put_contents($filePath, $jsonData);
+        }
+    }
+}
+
 
 
 

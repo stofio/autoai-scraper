@@ -83,7 +83,8 @@ class ScrapaWebsite {
                 "title" => $title,
                 "content" => $simplifiedContent,
                 "img-url" => $imageUrl,
-                "img-credit" => $imageCredit
+                "img-credit" => $imageCredit,
+                "original-url" => $articleUrl
             ];
 
         } catch (Exception $e) {
@@ -133,7 +134,7 @@ class ScrapaWebsite {
 	    $cleanDom = new DOMDocument();
 
 	    // Update the query to include h2, h3, h4, h5, and h6 tags
-	    $nodes = $xpath->query('//text()[not(parent::script) and normalize-space()] | //img | //h2 | //h3 | //h4 | //h5 | //h6');
+	    $nodes = $xpath->query('//text()[not(parent::script) and normalize-space()] | //img | //h2 | //h3 | //h4 | //h5 | //h6 || //ul || //ol');
 
 	    $firstImage = true;
 	    $textEncountered = false;
@@ -199,7 +200,6 @@ class ScrapaWebsite {
 	            $newImg = $dom->createElement('img');
 	            $newImg->setAttribute('src', $imageSrc);
 	        } else {
-	            my_log('IMG NOT FOUNDD');
 	            $newImg = $dom->createElement('span');
 	        }
 
@@ -209,7 +209,6 @@ class ScrapaWebsite {
 
 	    $simplifiedContent = $dom->saveHTML();
 	    libxml_use_internal_errors(false);
-	    my_log($simplifiedContent);
 	    return $simplifiedContent;
 	}
 
