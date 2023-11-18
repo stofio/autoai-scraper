@@ -54,8 +54,6 @@ function run_scraper_and_post() {
     $digitaltrendsMOBILE = $scraper->scrapeWebsite($digitaltrendsMobileConfig);
 
 
-
-
     checkScrapedDataGenerateAiAndPost($digitaltrendsMOBILE);
 
     //
@@ -66,14 +64,14 @@ function run_scraper_and_post() {
     //
     //
     //add the dashboard
+    //add possibility to choose between gpt-3-turbo (0.0015$ x 1k token) and gpt-3-turbo-16k (0.003-0.004$ x 1k token)
+    //add to be able to change the promts (advanced)
     //
     //add chrome job
     //
     //check with gpt if chrome job could slow site while running.. or something like that
     //
     //
-
-
 }
 
 
@@ -138,7 +136,32 @@ function run_scraper_from_url($url, $check_exist) {
     $article = $clsScraper->scrapeWebsite($tomshardwarePCConfig, $url);
 
     checkScrapedDataGenerateAiAndPost($article);
+}
 
-    return;
 
+
+//get AI article and post
+function getAiAndPost($scrapedArticle) {
+
+    //
+    //get AI ARTICLE
+    //
+    $aiGeneratedContent = generateContentWithAI($scrapedArticle);
+
+
+    if (strlen($aiGeneratedContent['content']) < 500) {
+        my_second_log('ERROR', 'Content : ' . $url);
+        return;
+    }
+
+    // Check if content generation was successful
+    if ($aiGeneratedContent === 'error') {
+        my_second_log('ERROR', 'Failed to generate content with AI for article: ' . $scrapedArticle['title']);
+        return 'error';
+    }
+
+    //
+    // Create a NEW POST with the AI-generated content
+    //
+    return createNewPost($aiGeneratedContent); // Returns 'success' or 'error'
 }

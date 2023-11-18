@@ -15,7 +15,7 @@ function sendToOpenAI($prompt) {
                 'Authorization: Bearer ' . API_KEY
             ],
             CURLOPT_POSTFIELDS => json_encode([
-                'model' => 'gpt-3.5-turbo',
+                'model' => 'gpt-3.5-turbo-16k',
                 'messages' => [['role' => 'user', 'content' => $prompt]]
             ])
         ]);
@@ -77,10 +77,9 @@ function getAiContent($contentAndTitle) {
             throw new Exception('Invalid input array in getAiContent');
         }
 
-        $prompt = <<<EOD
-            I am providing a scraped news article from the PC technology niche for rewriting. Your task is to read the article, understand the content, extract and focus solely on the main content of the news, expanding and enriching it while maintaining accuracy. Additionally, restructure the content into clearly defined sections with appropriate subtitles (using h2 or h3 tags). Here are the specific instructions:
 
-            - Create Subtitles: Break down the content into 2-3 key points, each with a descriptive subtitle, excluding subtitles for introduction and conclusion. Use h2 or h3 tags for these subtitles. Do not use too much subtitles, only minimum amount.
+        $prompt = <<<EOD
+            I am providing a scraped article from the web for rewriting. Your task is to read the article, understand the content, ignore everything that is not about the main content of the article, rewrite the article in same lenght, expanding and enriching it while maintaining accuracy. And return back the content rewritten in HTML. Here are the specific instructions:
 
             - Exclude Unrelated Sections: Omit any 'related content', 'recommendations', 'suggested articles', or other parts not directly related to the main news story.
 
@@ -95,9 +94,9 @@ function getAiContent($contentAndTitle) {
             "content": "{$contentAndTitle['content']}"
             }
 
-            Rewrite this article with the addition of subtitles. Each section of the article should focus on a specific aspect or key point of the news story, marked by a subtitle. Leave existing <img> tags as they are, matching their position in the text, but removing any credits related to the image. Do not create or infer new image tags. Also, remove links to other articles and sections like 'related content', 'recommendations', 'suggested articles'.
+            Leave existing <img> tags as they are, matching their position in the text, but removing any credits related to the image. Do not create or infer new image tags. Also, remove links to other articles and sections like 'related content', 'recommendations', 'suggested articles'.
 
-            Please return only the rewritten main content in HTML format, with subtitles and without any additional comments or explanations.
+            Please return only the rewritten main content of the article in HTML format, without any additional comments or explanations.
         EOD;
 
         $responseArray = sendToOpenAI($prompt);
@@ -106,8 +105,11 @@ function getAiContent($contentAndTitle) {
             !isset($responseArray['choices'][0]['message']['content'])) {
             throw new Exception('Error decoding JSON getAiContent or accessing content field');
         }
+        my_log($contentAndTitle['content']);
+        my_log($responseArray);
 
         return $responseArray['choices'][0]['message']['content'];
+
     } catch (Exception $e) {
         my_second_log('ERROR', $e->getMessage());
         return null;

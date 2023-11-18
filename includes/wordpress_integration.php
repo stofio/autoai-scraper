@@ -1,20 +1,5 @@
 <?php
 
-//get AI article and post
-function getAiAndPost($scrapedArticle) {
-    $aiGeneratedContent = generateContentWithAI($scrapedArticle);
-
-    // Check if content generation was successful
-    if ($aiGeneratedContent === 'error') {
-        my_second_log('ERROR', 'Failed to generate content with AI for article: ' . $scrapedArticle['title']);
-        return 'error';
-    }
-
-    // Create a new post with the AI-generated content
-    return createNewPost($aiGeneratedContent); // Returns 'success' or 'error'
-}
-
-
 function generateContentWithAI($article) {
     $titleAndExcerpt = getAiTitleAndExcerpt($article);
 
@@ -48,6 +33,11 @@ function createNewPost($article) {
         if (empty($content)) {
             throw new Exception('Content is empty, article cannot be created.');
         }
+
+        $content = getAndDownloadImagesInNewContent($content);
+
+        my_log('AAAA');
+        my_log($content);
 
         $post_id = insertPost($article);
         if (is_wp_error($post_id)) {
@@ -111,3 +101,73 @@ function attachFeaturedImage($post_id, $article) {
 
     return $attach_id; // Return the attachment ID
 }
+
+
+function getAndDownloadImagesInNewContent(&$content) {
+    // Load the content into a DOMDocument for parsing
+    $doc = new DOMDocument();
+    @$doc->loadHTML($content);
+
+    // Find all <img> tags
+    $images = $doc->getElementsByTagName('img');
+
+    foreach ($images as $img) {
+        $src = $img->getAttribute('src');
+
+        // Download the image and get the new URL
+        $newUrl = downloadAndUploadImage($src);
+
+        if ($newUrl) {
+            // Replace the old src with the new URL
+            $img->setAttribute('src', $newUrl);
+        }
+    }
+
+    // Save the updated HTML content
+    $content = $doc->saveHTML();
+
+    return $content;
+}
+
+function downloadAndUploadImage($imageUrl) {
+    require_once(ABSPATH . 'wp-admin/includes/file.php');
+    require_once(ABSPATH . 'wp-admin/includes/media.php');
+    require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+    // Download the image
+    $imageData = file_get_contents($imageUrl);
+    if ($imageData === false) {
+        my_second_log('ERROR', 'Failed to download image: ' . $imageUrl);
+        return false;
+    }
+
+    // Determine the filename and extension
+    $filename = basename(parse_url($imageUrl, PHP_URL_PATH));
+    $upload = wp_upload_bits($filename, null, $imageData);
+
+    if ($upload['error']) {
+        my_second_log('ERROR', 'Error in uploading image: ' . $upload['error']);
+        return false;
+    }
+
+    // Prepare an array for the attachment
+    $wp_filetype = wp_check_filetype($filename, null);
+    $attachment = array(
+        'post_mime_type' => $wp_filetype['type'],
+        'post_title' => sanitize_file_name($filename),
+        'post_content' => '',
+        'post_status' => 'inherit'
+    );
+
+    // Insert the attachment
+    $attach_id = wp_insert_attachment($attachment, $upload['file']);
+
+    // Generate attachment metadata and update the attachment metadata
+    $attach_data = wp_generate_attachment_metadata($attach_id, $upload['file']);
+    wp_update_attachment_metadata($attach_id, $attach_data);
+
+    // Return the URL of the uploaded image
+    return wp_get_attachment_url($attach_id);
+}
+
+

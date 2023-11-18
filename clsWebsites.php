@@ -74,6 +74,7 @@ class ScrapaWebsite {
             $imageUrl = $articleDoc->find($selectors['imageUrl'])->attr('content');
             $imageCredit = $config['defaultImageCredit'] ?? "Unknown Source";
 
+
             $cleanedContent = $this->cleanHtmlContent($content); // Method to clean the HTML content
             $simplifiedContent = $this->simplifyImageTags($cleanedContent); //get images url, and replace non jpg,png with span
            // $recleanedContent = $this->cleanHtmlContent($content); // redo the cleaning to remove emtpy span
@@ -134,7 +135,8 @@ class ScrapaWebsite {
 	    $cleanDom = new DOMDocument();
 
 	    // Update the query to include h2, h3, h4, h5, and h6 tags
-	    $nodes = $xpath->query('//text()[not(parent::script) and normalize-space()] | //img | //h2 | //h3 | //h4 | //h5 | //h6 || //ul || //ol');
+	    $nodes = $xpath->query('//text()[not(parent::script) and normalize-space()] | //img | //h2 | //h3 | //h4 | //h5 | //h6 | //ul | //ol');
+
 
 	    $firstImage = true;
 	    $textEncountered = false;
