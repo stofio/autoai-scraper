@@ -1,33 +1,6 @@
 <?php
 
-function generateContentWithAI($article) {
-    $titleAndExcerpt = getAiTitleAndExcerpt($article);
-
-    // Check if title and excerpt were successfully generated
-    if ($titleAndExcerpt === 'error') {
-        return 'error'; // Propagate the error
-    }
-
-    $content = getAiContent($article);
-
-    // Check if content was successfully generated
-    if ($content === 'error') {
-        return 'error'; // Propagate the error
-    }
-
-    // Return the combined AI-generated content
-    return [
-        'title' => $titleAndExcerpt['title'],
-        'excerpt' => $titleAndExcerpt['excerpt'],
-        'content' => $content,
-        'img-url' => $article['img-url'],
-        'img-credit' => $article['img-credit']
-    ];
-}
-
-
-
-function createNewPost($article) {
+function createNewPost($article, $categoryID) {
     try {
         $content = trim($article['content']);
         if (empty($content)) {
@@ -36,10 +9,7 @@ function createNewPost($article) {
 
         $content = getAndDownloadImagesInNewContent($content);
 
-        my_log('AAAA');
-        my_log($content);
-
-        $post_id = insertPost($article);
+        $post_id = insertPost($article, $categoryID);
         if (is_wp_error($post_id)) {
             throw new Exception('Failed to insert post: ' . $post_id->get_error_message());
         }
@@ -58,7 +28,7 @@ function createNewPost($article) {
 
 
 
-function insertPost($article) {
+function insertPost($article, $categoryID) {
     $post_data = array(
         'post_title'    => $article['title'],
         'post_excerpt'  => $article['excerpt'],
@@ -66,7 +36,7 @@ function insertPost($article) {
         'post_status'   => 'publish',
         'post_author'   => 1, // or another user ID
         'post_type'     => 'post',
-        'post_category' => array(38) // Change to the desired category ID
+        'post_category' => array($categoryID)
     );
 
     $post_id = wp_insert_post($post_data);

@@ -1,6 +1,0 @@
-[2023-11-15 12:08:55] [ERROR] Error in scrapeWebsite: unable to create socket "tls://www.tomshardware.com:443" php_network_getaddresses: getaddrinfo for www.tomshardware.com failed: No such host is known. 
-[2023-11-15 12:09:02] [ERROR] Error in scrapeWebsite: unable to create socket "tls://www.tomshardware.com:443" php_network_getaddresses: getaddrinfo for www.tomshardware.com failed: No such host is known. 
-[2023-11-15 12:09:15] [ERROR] Error in scrapeWebsite: unable to create socket "tls://www.tomshardware.com:443" php_network_getaddresses: getaddrinfo for www.tomshardware.com failed: No such host is known. 
-[2023-11-15 12:09:25] [ERROR] Error in scrapeWebsite: unable to create socket "tls://www.tomshardware.com:443" php_network_getaddresses: getaddrinfo for www.tomshardware.com failed: No such host is known. 
-[2023-11-15 12:09:33] [ERROR] Error in scrapeWebsite: unable to create socket "tls://www.tomshardware.com:443" php_network_getaddresses: getaddrinfo for www.tomshardware.com failed: No such host is known. 
-[2023-11-15 12:09:47] [ERROR] Error in scrapeWebsite: unable to create socket "tls://www.tomshardware.com:443" php_network_getaddresses: getaddrinfo for www.tomshardware.com failed: No such host is known. 

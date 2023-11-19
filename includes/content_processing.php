@@ -4,6 +4,32 @@ define('API_KEY', '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');
 define('API_ENDPOINT', 'https://api.openai.com/v1/chat/completions');
 
 
+function generateContentWithAI($article) {
+    $titleAndExcerpt = getAiTitleAndExcerpt($article);
+
+    // Check if title and excerpt were successfully generated
+    if ($titleAndExcerpt === 'error') {
+        return 'error'; // Propagate the error
+    }
+
+    $content = getAiContent($article);
+
+    // Check if content was successfully generated
+    if ($content === 'error') {
+        return 'error'; // Propagate the error
+    }
+
+    // Return the combined AI-generated content
+    return [
+        'title' => $titleAndExcerpt['title'],
+        'excerpt' => $titleAndExcerpt['excerpt'],
+        'content' => $content,
+        'img-url' => $article['img-url'],
+        'img-credit' => $article['img-credit']
+    ];
+}
+
+
 function sendToOpenAI($prompt) {
     try {
         $ch = curl_init(API_ENDPOINT);
@@ -78,26 +104,37 @@ function getAiContent($contentAndTitle) {
         }
 
 
+        //first get shortened article, with all the information and precise data
+        //then create subtitles
+
+
         $prompt = <<<EOD
-            I am providing a scraped article from the web for rewriting. Your task is to read the article, understand the content, ignore everything that is not about the main content of the article, rewrite the article in same lenght, expanding and enriching it while maintaining accuracy. And return back the content rewritten in HTML. Here are the specific instructions:
+            I am providing a scraped article from the web for rewriting. Your task is to read the article, and thoroughly rewrite it. The rewritten version should be as long as the original or longer, with an emphasis on expanding and enriching the content, maintaining accuracy and depth. Here are the specific instructions:
+
+            - Expand and Enrich Content: Ensure the rewritten article matches or exceeds the word count of the original. Actively expand on points by providing additional context, detailed explanations, relevant examples, and supplementary information that enhances the depth and breadth of the article.
+
+            - Maintain Essential Information: Preserve all key information and facts from the original article. Each point in the original should be clearly reflected and expanded upon in the rewritten version.
 
             - Exclude Unrelated Sections: Omit any 'related content', 'recommendations', 'suggested articles', or other parts not directly related to the main news story.
 
-            - Handle Image Tags Carefully: Retain all existing image tags (<img src=...>) in their original positions, removing sources or credits associated with these images. However, do not create or infer any new image tags if they are not explicitly present in the original text.
+            - Handle Image Tags with Precision: Keep all existing image tags (<img src=...>) in their original positions within the text. Remove any sources or credits associated with these images. Do not create or infer new image tags.
 
-            - Omit Descriptions of Videos: Any video descriptions within the article should be removed.
+            - Remove Video Descriptions: Exclude any descriptions or content related to videos in the original article.
 
-            Here's the original article:
+            Here's the original content:
 
             {
-            "title": "{$contentAndTitle['title']}",
             "content": "{$contentAndTitle['content']}"
             }
 
-            Leave existing <img> tags as they are, matching their position in the text, but removing any credits related to the image. Do not create or infer new image tags. Also, remove links to other articles and sections like 'related content', 'recommendations', 'suggested articles'.
+            Retain existing <img> tags in their exact positions, removing image credits. Also, remove links to other articles and sections like 'related content', 'recommendations', 'suggested articles'. 
 
-            Please return only the rewritten main content of the article in HTML format, without any additional comments or explanations.
+            Your goal is to return a comprehensively rewritten version of the main content in HTML format. This version should be as extensive as or more detailed than the original, without any additional comments or explanations.
         EOD;
+
+
+
+
 
         $responseArray = sendToOpenAI($prompt);
 
@@ -105,8 +142,7 @@ function getAiContent($contentAndTitle) {
             !isset($responseArray['choices'][0]['message']['content'])) {
             throw new Exception('Error decoding JSON getAiContent or accessing content field');
         }
-        my_log($contentAndTitle['content']);
-        my_log($responseArray);
+
 
         return $responseArray['choices'][0]['message']['content'];
 
@@ -120,7 +156,7 @@ function getAiContent($contentAndTitle) {
 
 function getAiContentOLDWORKING($contentAndTitle) {
     if (!isset($contentAndTitle['title'], $contentAndTitle['content'])) {
-        my_log('Invalid input array in getAiContent');
+        my_second_log('ERROR', 'Invalid input array in getAiContent');
         return null;
     }
 
@@ -154,7 +190,7 @@ function getAiContentOLDWORKING($contentAndTitle) {
         $theContent = $responseArray['choices'][0]['message']['content'];
         return $theContent;
     } else {
-        my_log("Error decoding JSON getAiContent or accessing content field.");
+        my_second_log("ERROR", "Error decoding JSON getAiContent or accessing content field.");
         return null;
     }
 }

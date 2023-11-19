@@ -18,8 +18,8 @@ function run_scraper_and_post() {
         'defaultImageCredit' => 'Digital Trends'
     ];
 
-   // $digiralTrendsPC = $scraper->scrapeWebsite($digitalTrendsPCConfig);
-
+    $digiralTrendsPC = $scraper->scrapeWebsite($digitalTrendsPCConfig);
+    checkScrapedDataGenerateAiAndPost($digiralTrendsPC, 34);
 
 
     $tomshardwarePCConfig = [
@@ -32,10 +32,12 @@ function run_scraper_and_post() {
             'newsLabelSel' => '.byline-social .byline',
             'newsLabelText' => 'News'
         ],
-        'defaultImageCredit' => 'Tom’s Hardware'
+        'defaultImageCredit' => 'Tom’s Hardware',
+        'category' => 34
     ];
 
-   // $tomshardwarePC = $scraper->scrapeWebsite($tomshardwarePCConfig);
+    $tomshardwarePC = $scraper->scrapeWebsite($tomshardwarePCConfig);
+    checkScrapedDataGenerateAiAndPost($digitaltrendsMOBILE, 34);
 
 
     $digitaltrendsMobileConfig = [
@@ -48,13 +50,14 @@ function run_scraper_and_post() {
             'newsLabelSel' => '.b-headline__top li a span',
             'newsLabelText' => 'News'
         ],
-        'defaultImageCredit' => 'Digital Trends'
+        'defaultImageCredit' => 'Digital Trends',
+        'category' => 38
     ];
 
     $digitaltrendsMOBILE = $scraper->scrapeWebsite($digitaltrendsMobileConfig);
+    checkScrapedDataGenerateAiAndPost($digitaltrendsMOBILE, 38);
 
 
-    checkScrapedDataGenerateAiAndPost($digitaltrendsMOBILE);
 
     //
     //
@@ -75,13 +78,13 @@ function run_scraper_and_post() {
 }
 
 
-function checkScrapedDataGenerateAiAndPost($scrapedData) {
+function checkScrapedDataGenerateAiAndPost($scrapedData, $categoryID) {
     if (is_array($scrapedData)) {
         $title = $scrapedData['title'];
         $url = $scrapedData['original-url'];
 
         if (!isUrlInPublishedList($url)) {
-            $post_id = getAiAndPost($scrapedData); // return post ID
+            $post_id = getAiAndPost($scrapedData, $categoryID); // return post ID
             if ($post_id !== 'error') {
                 addToPublishedList($scrapedData['original-url']);
 
@@ -97,7 +100,7 @@ function checkScrapedDataGenerateAiAndPost($scrapedData) {
             my_second_log('INFO', 'Skipped, already scraped: ' . $url);
         }
     } else {
-        my_second_log('ERROR', 'Invalid scraped data format');
+        my_second_log('ERROR', 'Invalid scraped data format: ' . $scrapedData);
     }
 }
 
@@ -133,15 +136,16 @@ function run_scraper_from_url($url, $check_exist) {
         'defaultImageCredit' => 'Tom’s Hardware'
     ];
 
-    $article = $clsScraper->scrapeWebsite($tomshardwarePCConfig, $url);
+    $article = $clsScraper->scrapeWebsite($digitalConfig, $url);
 
-    checkScrapedDataGenerateAiAndPost($article);
+
+    checkScrapedDataGenerateAiAndPost($article, 34);
 }
 
 
 
 //get AI article and post
-function getAiAndPost($scrapedArticle) {
+function getAiAndPost($scrapedArticle, $categoryID) {
 
     //
     //get AI ARTICLE
@@ -150,7 +154,7 @@ function getAiAndPost($scrapedArticle) {
 
 
     if (strlen($aiGeneratedContent['content']) < 500) {
-        my_second_log('ERROR', 'Content : ' . $url);
+        my_second_log('ERROR', 'Content generated too low for article: ' . $url);
         return;
     }
 
@@ -160,8 +164,11 @@ function getAiAndPost($scrapedArticle) {
         return 'error';
     }
 
+    my_log($scrapedArticle);
+    my_log($aiGeneratedContent);
+
     //
     // Create a NEW POST with the AI-generated content
     //
-    return createNewPost($aiGeneratedContent); // Returns 'success' or 'error'
+    return createNewPost($aiGeneratedContent, $categoryID); // Returns 'success' or 'error'
 }

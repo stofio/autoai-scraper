@@ -101,3 +101,7 @@ function my_second_log($level, $message) {
    $logMessage = "[$timestamp] [$level] $message\n";
    file_put_contents($logFile, $logMessage, FILE_APPEND);
 }
+
+function isValidUrl($url) {
+    return filter_var($url, FILTER_VALIDATE_URL) !== false;
+}

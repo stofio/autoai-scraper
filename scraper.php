@@ -18,19 +18,130 @@ function news_scraper_scripts() {
     wp_localize_script('news-scraper-script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
 }
 
-// Hook into the admin_menu action to add the submenu page
-add_action('admin_menu', 'news_scraper_tools_submenu');
-function news_scraper_tools_submenu() {
-    // Add a submenu page under the "Tools" menu
+// Hook into the admin_menu action to add the new top-level menu and submenus
+add_action('admin_menu', 'ai_scraper_custom_menu');
+
+function ai_scraper_custom_menu() {
+    // Add the top-level menu item
+    add_menu_page(
+        'AI Scraper Tools',         // Page title
+        'AI Scraper',               // Menu title
+        'manage_options',           // Capability required
+        'ai-scraper-dashboard',     // Menu slug
+        'ai_scraper_dashboard',     // Function to display the dashboard page
+        'dashicons-admin-site-alt3', // Icon for the menu (WordPress Dashicon)
+        6                           // Position in the menu (optional)
+    );
+
+    // Add the 'Scraper' submenu - this can be your existing page
     add_submenu_page(
-        'tools.php',                // Parent menu slug (the "Tools" menu)
-        'News Scraper',           // Page title
-        'News Scraper',           // Menu title
-        'manage_options',          // Capability required to access the page
-        'news-scraper',     // Unique menu slug
-        'news_scraper_render_custom_page' // Callback function to render the page content
+        'ai-scraper-dashboard',     // Parent slug
+        'Scraper',                  // Page title
+        'Scraper',                  // Menu title
+        'manage_options',           // Capability required
+        'news-scraper',             // Menu slug
+        'news_scraper_render_custom_page' // Function to display the page
+    );
+
+    // Add 'Websites' submenu
+    add_submenu_page(
+        'ai-scraper-dashboard',
+        'Websites',
+        'Websites',
+        'manage_options',
+        'ai-scraper-websites',
+        'ai_scraper_websites_page'
+    );
+
+    // Add 'Logs' submenu
+    add_submenu_page(
+        'ai-scraper-dashboard',
+        'Logs',
+        'Logs',
+        'manage_options',
+        'ai-scraper-logs',
+        'ai_scraper_logs_page'
+    );
+
+    // Add 'Settings' submenu
+    add_submenu_page(
+        'ai-scraper-dashboard',
+        'Settings',
+        'Settings',
+        'manage_options',
+        'ai-scraper-settings',
+        'ai_scraper_settings_page'
     );
 }
+
+// Functions to display the content for each page
+function ai_scraper_dashboard() {
+    // Content for the Dashboard main page
+    echo '<h1>AI Scraper Dashboard</h1>';
+}
+
+function ai_scraper_logs_page() {
+    // Content for the Logs page
+    echo '<h1>Scraper Logs</h1>';
+}
+
+function ai_scraper_settings_page() {
+    // Content for the Settings page
+    echo '<h1>AI Scraper Settings</h1>';
+}
+
+
+function ai_scraper_websites_page() {
+    ?>
+    <h1>Websites Management</h1>
+    <form method="post" action="">
+        <input type="hidden" name="action" value="add_website">
+        Base URL: <input type="text" name="base_url"><br>
+        <h2>Selectors:</h2>
+        Last article cat page: <input type="text" name="catPageLastArticle"><br>
+        Title: <input type="text" name="title"><br>
+        Content: <input type="text" name="content"><br>
+        Featured image url: <input type="text" name="imageUrl"><br>
+        Breadcrumb category label: <input type="text" name="newsLabelSel"><br>
+        Category label text to check: <input type="text" name="newsLabelText"><br><br>
+        Default Image Credit: <input type="text" name="default_image_credit"><br>
+        Category ID: <input type="number" name="category_id"><br>
+        <input type="submit" value="Add Website">
+    </form>
+    <?php
+}
+
+
+add_action('admin_init', 'ai_scraper_handle_form_submission');
+
+function ai_scraper_handle_form_submission() {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && $_POST['action'] == 'add_website') {
+        $website_config = [
+            'baseUrl' => sanitize_text_field($_POST['base_url']),
+            'selectors' => json_decode(stripslashes($_POST['selectors']), true),
+            'defaultImageCredit' => sanitize_text_field($_POST['default_image_credit'])
+        ];
+
+        // Get existing websites
+        $websites = get_option('ai_scraper_websites', []);
+        $websites[] = $website_config;
+
+        // Update the websites option
+        update_option('ai_scraper_websites', $websites);
+    }
+}
+
+
+function ai_scraper_run_scraping_process() {
+    $websites = get_option('ai_scraper_websites', []);
+    foreach ($websites as $website_config) {
+        $scrapedData = $scraper->scrapeWebsite($website_config);
+        checkScrapedDataGenerateAiAndPost($scrapedData, 34); // Adjust as needed
+    }
+}
+
+
+
 
 // Callback function to render the custom page content
 function news_scraper_render_custom_page() {

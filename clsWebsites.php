@@ -71,8 +71,15 @@ class ScrapaWebsite {
             // Extracting elements based on selectors
             $title = $articleDoc->find($selectors['title'])->text();
             $content = $articleDoc->find($selectors['content'])->html();
+
+            //featured image
             $imageUrl = $articleDoc->find($selectors['imageUrl'])->attr('content');
-            $imageCredit = $config['defaultImageCredit'] ?? "Unknown Source";
+            if (!isValidUrl($imageUrl)) {
+			    // If not valid, try getting the URL from 'src' attribute
+			    $imageUrl = $articleDoc->find($selectors['imageUrl'])->attr('src');
+			}
+
+            $imageCredit = $config['defaultImageCredit'] ?? "";
 
 
             $cleanedContent = $this->cleanHtmlContent($content); // Method to clean the HTML content
@@ -135,7 +142,7 @@ class ScrapaWebsite {
 	    $cleanDom = new DOMDocument();
 
 	    // Update the query to include h2, h3, h4, h5, and h6 tags
-	    $nodes = $xpath->query('//text()[not(parent::script) and normalize-space()] | //img | //h2 | //h3 | //h4 | //h5 | //h6 | //ul | //ol');
+	    $nodes = $xpath->query('//text()[not(parent::script) and normalize-space()] | //img | //h2 | //h3 | //h4 | //h5 | //h6 | //ul | //ol | //figure');
 
 
 	    $firstImage = true;
@@ -191,7 +198,7 @@ class ScrapaWebsite {
 	            $attrValue = $attribute->value;
 
 	            // Check if the attribute value contains a valid URL with jpg, jpeg, or png extension
-	            if (preg_match('/\.(jpg|jpeg|png)$/i', $attrValue)) {
+	            if (preg_match('/\.(jpg|jpeg|png)(\?|&|$)/i', $attrValue)) {
 	                $imageSrc = $attrValue;
 	                break; // Break the loop if a valid URL is found
 	            }
