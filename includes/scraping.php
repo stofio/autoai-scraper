@@ -164,8 +164,6 @@ function getAiAndPost($scrapedArticle, $categoryID) {
         return 'error';
     }
 
-    my_log($scrapedArticle);
-    my_log($aiGeneratedContent);
 
     //
     // Create a NEW POST with the AI-generated content
