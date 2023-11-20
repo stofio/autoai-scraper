@@ -233,7 +233,6 @@ function getAIPieceOfArticle($contentPart, $title) {
         Expand the content's depth while omitting unrelated details. 
         Exclude references to videos, author names, credits, authors, unrelated sections and unrelated text that does not make sense in the context. The goal is a longer, enriched version of the text, focused solely on the article's content. Remove any parts that are not part of the story of the article, like related links, readings, recommendations...
 
-        This is the title of the main article: "{$title}"
         Here is the article excerpt to rewrite:
         "content": "{$contentPart}"
 
