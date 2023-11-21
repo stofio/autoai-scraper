@@ -92,45 +92,16 @@ function ai_scraper_settings_page() {
 
 
 function ai_scraper_websites_page() {
-    ?>
-    <h1>Websites Management</h1>
-    <form method="post" action="">
-        <input type="hidden" name="action" value="add_website">
-        Base URL: <input type="text" name="base_url"><br>
-        <h2>Selectors:</h2>
-        Last article cat page: <input type="text" name="catPageLastArticle"><br>
-        Title: <input type="text" name="title"><br>
-        Content: <input type="text" name="content"><br>
-        Featured image url: <input type="text" name="imageUrl"><br>
-        Breadcrumb category label: <input type="text" name="newsLabelSel"><br>
-        Category label text to check: <input type="text" name="newsLabelText"><br><br>
-        Default Image Credit: <input type="text" name="default_image_credit"><br>
-        Category ID: <input type="number" name="category_id"><br>
-        <input type="submit" value="Add Website">
-    </form>
-    <?php
+    require_once plugin_dir_path(__FILE__) . '/admin/websites.php';
 }
 
 
-add_action('admin_init', 'ai_scraper_handle_form_submission');
+add_action('admin_init', 'ai_scraper_handle_form');
 
-function ai_scraper_handle_form_submission() {
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && $_POST['action'] == 'add_website') {
-        $website_config = [
-            'baseUrl' => sanitize_text_field($_POST['base_url']),
-            'selectors' => json_decode(stripslashes($_POST['selectors']), true),
-            'defaultImageCredit' => sanitize_text_field($_POST['default_image_credit'])
-        ];
-
-        // Get existing websites
-        $websites = get_option('ai_scraper_websites', []);
-        $websites[] = $website_config;
-
-        // Update the websites option
-        update_option('ai_scraper_websites', $websites);
-    }
+function ai_scraper_handle_form() {
+    require_once plugin_dir_path(__FILE__) . '/admin/includes/handle_websites.php';
+    ai_scraper_handle_form_submission();
 }
-
 
 function ai_scraper_run_scraping_process() {
     $websites = get_option('ai_scraper_websites', []);

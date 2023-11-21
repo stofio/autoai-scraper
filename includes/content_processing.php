@@ -119,9 +119,9 @@ function rewriteContent($content, $title) {
             $paragraphText = $node->textContent;
             $wordCount = str_word_count($paragraphText);
 
-            if ($currentWordCount + $wordCount > 300) {
+            if ($currentWordCount + $wordCount > 400) {
                 // Check if last node was a heading
-                if ($lastNode && in_array($lastNode->nodeName, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])) {
+                if ($lastNode && in_array($lastNode->nodeName, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img'])) {
                     $detachedHeading = $lastNode->parentNode->removeChild($lastNode);
                 }
 
@@ -129,15 +129,7 @@ function rewriteContent($content, $title) {
                 $imagePositions = calculateImagePositionsByTags($currentPart);
                 $rewrittenPart = getAIPieceOfArticle($currentPart, $title);
                 $finalContent = reinsertImagesByTagCount($rewrittenPart, $imagePositions);
-
-                /*my_log('ORIGINAL');
-                my_log('ORIGINAL');
-                my_log('ORIGINAL');
-                my_log($currentPart);
-                my_log('REWRITTEN');
-                my_log('REWRITTEN');
-                my_log('REWRITTEN');
-                my_log($rewrittenPart);*/
+                
 
                 $rewrittenContent .= $finalContent;
 
@@ -236,7 +228,8 @@ function getAIPieceOfArticle($contentPart, $title) {
         Here is the article excerpt to rewrite:
         "content": "{$contentPart}"
 
-        Remember to exclude videos related text, author names, credits, and unrelated sections like 'releated readings', 'editor recommendations' sections, ecc.
+        If some of the "content" (or all) is out of context from the article '$title', exclude that part.
+        Remember to exclude videos related text, author names, credits, and unrelated sections like 'releated readings', 'editor recommendations' sections with its content, ecc.
         The output should be a detailed, HTML-formatted text that mirrors the original's key points of the entire article, with longer pharagraphs.
         EOD;
 
@@ -258,55 +251,79 @@ function getAIPieceOfArticle($contentPart, $title) {
 
 
 function calculateImagePositionsByTags($currentPart) {
-    if (empty($currentPart)) {
-        // If the current part is empty, return an empty array as there are no images
+    if ($currentPart == '') {
         return [];
     }
 
     $dom = new DOMDocument();
     @$dom->loadHTML(mb_convert_encoding($currentPart, 'HTML-ENTITIES', 'UTF-8'));
 
-    $tagCount = 0;
     $imagePositions = [];
-    foreach ($dom->getElementsByTagName('body')->item(0)->childNodes as $child) {
-        if ($child->nodeType === XML_ELEMENT_NODE) {
-            $tagCount++;
-            if ($child->nodeName === 'img') {
-                $imagePositions[] = ['tagCount' => $tagCount, 'tag' => $dom->saveHTML($child)];
+    $tagCount = 0;
+
+    // Function to recursively search for image tags and count p tags
+    $findImages = function($node) use (&$findImages, &$imagePositions, &$tagCount) {
+        if ($node->nodeType === XML_ELEMENT_NODE) {
+            if ($node->nodeName === 'p') {
+                $tagCount++;
+            }
+            if ($node->nodeName === 'img') {
+                $imagePositions[] = ['tagCount' => $tagCount, 'tag' => $node->ownerDocument->saveHTML($node)];
+            }
+            foreach ($node->childNodes as $child) {
+                $findImages($child);
             }
         }
+    };
+
+    // Start the recursive search from the body node
+    $body = $dom->getElementsByTagName('body')->item(0);
+    foreach ($body->childNodes as $child) {
+        $findImages($child);
     }
 
     return $imagePositions;
 }
 
+
+
+
 function reinsertImagesByTagCount($rewrittenPart, $imagePositions) {
-    if (empty($rewrittenPart)) {
-        // If the current part is empty, return an empty array as there are no images
-        return [];
+    if ($rewrittenPart == '') {
+        return $rewrittenPart;
     }
 
     $dom = new DOMDocument();
     @$dom->loadHTML(mb_convert_encoding($rewrittenPart, 'HTML-ENTITIES', 'UTF-8'));
 
     $body = $dom->getElementsByTagName('body')->item(0);
-    $tagCount = 0;
+
+    // Get all element nodes in the body
+    $elementNodes = [];
+    foreach ($body->childNodes as $child) {
+        if ($child->nodeType === XML_ELEMENT_NODE) {
+            $elementNodes[] = $child;
+        }
+    }
+
+    $numElements = count($elementNodes);
+
     foreach ($imagePositions as $image) {
-        foreach ($body->childNodes as $child) {
-            if ($child->nodeType === XML_ELEMENT_NODE) {
-                $tagCount++;
-                if ($tagCount == $image['tagCount']) {
-                    $newImage = $dom->createDocumentFragment();
-                    $newImage->appendXML($image['tag']);
-                    $body->insertBefore($newImage, $child);
-                    break;
-                }
-            }
+        $imgDom = new DOMDocument();
+        @$imgDom->loadHTML($image['tag']);
+
+        $importedNode = $dom->importNode($imgDom->documentElement, true);
+
+        if ($image['tagCount'] < $numElements) {
+            $body->insertBefore($importedNode, $elementNodes[$image['tagCount']]);
+        } else {
+            $body->appendChild($importedNode);
         }
     }
 
     return $dom->saveHTML($body);
 }
+
 
 
 
