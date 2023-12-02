@@ -1,0 +1,36 @@
+[2023-11-26 00:29:40] [INFO] Scraped data success
+[2023-11-26 00:29:50] [INFO] AI content created success
+[2023-11-26 00:29:54] [INFO] SUCCESS POST posted with ID: 447
+[2023-11-26 00:32:23] [INFO] Scraped data success
+[2023-11-26 00:32:37] [INFO] AI content created success
+[2023-11-26 00:32:49] [INFO] SUCCESS POST posted with ID: 452
+[2023-11-26 00:34:46] [INFO] Scraped data success
+[2023-11-26 01:08:11] [INFO] Scraped data success
+[2023-11-26 01:08:30] [INFO] AI content created success
+[2023-11-26 01:08:34] [INFO] SUCCESS POST posted with ID: 456
+[2023-11-26 01:12:53] [INFO] Skipped, not categorized in selected breadcrumbs label: https://www.tomshardware.com/news/colorful-taps-amd-new-all-in-one-pc-ryzen-9-6900hx-radeon-rx-6850m-xt
+[2023-11-26 01:12:53] [ERROR] Invalid scraped data format: 
+[2023-11-26 01:16:41] [INFO] Skipped, not categorized in selected breadcrumbs label: https://www.digitaltrends.com/mobile/apple-ipad-pro-getting-amazing-feature-2024-oled-news/
+[2023-11-26 01:16:41] [ERROR] Invalid scraped data format: 
+[2023-11-26 01:17:13] [INFO] Skipped, not categorized in selected breadcrumbs label: https://www.digitaltrends.com/mobile/apple-ipad-pro-getting-amazing-feature-2024-oled-news/
+[2023-11-26 01:17:13] [ERROR] Invalid scraped data format: 
+[2023-11-26 01:17:45] [INFO] Skipped, not categorized in selected breadcrumbs label: https://www.digitaltrends.com/mobile/oneplus-12-news-rumors-price-release-date-specs/
+[2023-11-26 01:17:45] [ERROR] Invalid scraped data format: 
+[2023-11-26 01:18:43] [INFO] Skipped, not categorized in selected breadcrumbs label: https://www.digitaltrends.com/mobile/oneplus-12-news-rumors-price-release-date-specs/
+[2023-11-26 01:18:43] [ERROR] Invalid scraped data format: 
+[2023-11-26 01:19:29] [INFO] Skipped, not categorized in selected breadcrumbs label: https://www.digitaltrends.com/mobile/samsung-galaxy-s24-ultra-huge-leak-hands-on-photos-news/
+[2023-11-26 01:19:29] [ERROR] Invalid scraped data format: 
+[2023-11-26 01:22:34] [INFO] Skipped, not categorized in selected breadcrumbs label: https://www.digitaltrends.com/mobile/samsung-galaxy-s24-ultra-huge-leak-hands-on-photos-news/
+[2023-11-26 01:22:34] [ERROR] Invalid scraped data format: 
+[2023-11-26 01:23:14] [INFO] Scraped data success
+[2023-11-26 01:23:27] [INFO] AI content created success
+[2023-11-26 01:23:31] [INFO] SUCCESS POST posted with ID: 461
+[2023-11-26 01:25:07] [INFO] Skipped, not categorized in selected breadcrumbs label: https://www.tomshardware.com/news/colorful-taps-amd-new-all-in-one-pc-ryzen-9-6900hx-radeon-rx-6850m-xt
+[2023-11-26 01:25:07] [ERROR] Invalid scraped data format: 
+[2023-11-26 01:27:56] [INFO] Scraped data success
+[2023-11-26 01:28:09] [INFO] AI content created success
+[2023-11-26 01:28:14] [INFO] SUCCESS POST posted with ID: 466
+[2023-11-26 01:30:36] [INFO] Scraped data success
+[2023-11-26 01:30:47] [INFO] AI content created success
+[2023-11-26 01:30:51] [INFO] SUCCESS POST posted with ID: 471
+[2023-11-26 01:31:00] [INFO] Skipped, already scraped: https://www.digitaltrends.com/mobile/samsung-galaxy-s24-ultra-huge-leak-hands-on-photos-news/

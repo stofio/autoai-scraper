@@ -61,12 +61,18 @@ class ScrapaWebsite {
             if (!$articleDoc) {
                 throw new Exception("Failed to load article content from URL: $articleUrl");
             }
-
+    
+    
             //check if is NEWS
-            $newsLabel = $articleDoc->find($selectors['newsLabelSel'])->text();
-            if (strpos($newsLabel, $selectors['newsLabelText']) === false) {
-                throw new Exception("The article is not categorized as 'News'.");
-            }
+			if($selectors['newsLabelSel'] && $selectors['newsLabelText']) {
+				if($articleDoc->find($selectors['newsLabelSel']) == null) {
+					throw new Exception("The article is not categorized as 'News'.");
+				}
+				$newsLabel = $articleDoc->find($selectors['newsLabelSel'])->text();
+				if (strpos($newsLabel, $selectors['newsLabelText']) === false) {
+					throw new Exception("The article is not categorized as 'News'.");
+				}
+			}
 
             // Extracting elements based on selectors
             $title = $articleDoc->find($selectors['title'])->text();
@@ -97,7 +103,7 @@ class ScrapaWebsite {
 
         } catch (Exception $e) {
             if ($e->getMessage() == "The article is not categorized as 'News'.") {
-                my_second_log("INFO", "Skipped non-news article at " . $articleUrl);
+                my_second_log("INFO", "Skipped, not categorized in selected breadcrumbs label: " . $articleUrl);
                 return null;
             } else {
                 my_second_log("ERROR", "Error in scrapeWebsite: " . $e->getMessage());

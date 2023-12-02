@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: News Scraper
+ * Plugin Name: Auto Post AI
  * Plugin URI: #
- * Description: This plugin scrapes news websites, rewrites the article with AI and creates new post
+ * Description: This plugin scrapes from selected URLs, a.k.a sources, rewrites the article with AI and creates new post
  * Version: 1.0.0
  * Author: Anonymous
  * License: GPL-2.0+
@@ -11,11 +11,14 @@
 
 add_action('admin_enqueue_scripts', 'news_scraper_scripts');
 function news_scraper_scripts() {
-    wp_enqueue_script('jquery');
-    wp_enqueue_script('news-scraper-script', plugins_url('/js/js.js', __FILE__), array( 'jquery', 'wp-blocks', 'wp-element', 'wp-data' ));
-    wp_enqueue_style('news-scraper-scraper-style', plugins_url('/css/css.css', __FILE__));
+    if (is_admin()) {
+        wp_enqueue_script('jquery');
+        wp_enqueue_script('news-scraper-script', plugins_url('/js/js.js', __FILE__), array( 'jquery', 'wp-blocks', 'wp-element', 'wp-data' ));
+        wp_enqueue_style('news-scraper-scraper-style', plugins_url('/css/css.css', __FILE__));
 
-    wp_localize_script('news-scraper-script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+        wp_localize_script('news-scraper-script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+
+    }
 }
 
 // Hook into the admin_menu action to add the new top-level menu and submenus
@@ -24,161 +27,140 @@ add_action('admin_menu', 'ai_scraper_custom_menu');
 function ai_scraper_custom_menu() {
     // Add the top-level menu item
     add_menu_page(
-        'AI Scraper Tools',         // Page title
-        'AI Scraper',               // Menu title
+        'AI Auto Post',         // Page title
+        'AI Auto Post',               // Menu title
         'manage_options',           // Capability required
-        'ai-scraper-dashboard',     // Menu slug
-        'ai_scraper_dashboard',     // Function to display the dashboard page
+        'ai-auto-post',     // Menu slug
+        'ai_auto_post_page',     // Function to display the dashboard page
         'dashicons-admin-site-alt3', // Icon for the menu (WordPress Dashicon)
         6                           // Position in the menu (optional)
     );
 
     // Add the 'Scraper' submenu - this can be your existing page
     add_submenu_page(
-        'ai-scraper-dashboard',     // Parent slug
-        'Scraper',                  // Page title
-        'Scraper',                  // Menu title
+        'ai-auto-post',     // Parent slug
+        'From URL',                  // Page title
+        'From URL',                  // Menu title
         'manage_options',           // Capability required
-        'news-scraper',             // Menu slug
-        'news_scraper_render_custom_page' // Function to display the page
+        'autoai-from-url',             // Menu slug
+        'autoai_from_url_page' // Function to display the page
     );
 
-    // Add 'Websites' submenu
+    // Add 'sources' submenu
     add_submenu_page(
-        'ai-scraper-dashboard',
-        'Websites',
-        'Websites',
+        'ai-auto-post',
+        'Sources',
+        'Sources',
         'manage_options',
-        'ai-scraper-websites',
-        'ai_scraper_websites_page'
+        'autoai-sources',
+        'autoai_sources_page'
     );
 
     // Add 'Logs' submenu
-    add_submenu_page(
-        'ai-scraper-dashboard',
-        'Logs',
-        'Logs',
-        'manage_options',
-        'ai-scraper-logs',
-        'ai_scraper_logs_page'
-    );
+    // add_submenu_page(
+    //     'ai-auto-post',
+    //     'Logs',
+    //     'Logs',
+    //     'manage_options',
+    //     'ai-scraper-logs',
+    //     'ai_scraper_logs_page'
+    // );
 
     // Add 'Settings' submenu
     add_submenu_page(
-        'ai-scraper-dashboard',
+        'ai-auto-post',
         'Settings',
         'Settings',
         'manage_options',
-        'ai-scraper-settings',
-        'ai_scraper_settings_page'
+        'autoai-settings',
+        'autoai_settings_page'
     );
 }
 
-// Functions to display the content for each page
-function ai_scraper_dashboard() {
-    // Content for the Dashboard main page
-    echo '<h1>AI Scraper Dashboard</h1>';
+
+function autoai_sources_page() {
+    require_once plugin_dir_path(__FILE__) . '/admin/page-sources.php';
 }
 
-function ai_scraper_logs_page() {
-    // Content for the Logs page
-    echo '<h1>Scraper Logs</h1>';
-}
-
-function ai_scraper_settings_page() {
-    // Content for the Settings page
-    echo '<h1>AI Scraper Settings</h1>';
+function ai_auto_post_page() {
+    require_once plugin_dir_path(__FILE__) . '/admin/page-auto-post.php';
 }
 
 
-function ai_scraper_websites_page() {
-    require_once plugin_dir_path(__FILE__) . '/admin/websites.php';
+function autoai_from_url_page() {
+    require_once plugin_dir_path(__FILE__) . '/admin/page-from-url.php';
+}
+
+function autoai_settings_page() {
+    require_once plugin_dir_path(__FILE__) . '/admin/page-settings.php';
 }
 
 
 add_action('admin_init', 'ai_scraper_handle_form');
-
 function ai_scraper_handle_form() {
-    require_once plugin_dir_path(__FILE__) . '/admin/includes/handle_websites.php';
+    require_once plugin_dir_path(__FILE__) . '/admin/includes/handle_actions.php';
     ai_scraper_handle_form_submission();
 }
 
 function ai_scraper_run_scraping_process() {
-    $websites = get_option('ai_scraper_websites', []);
-    foreach ($websites as $website_config) {
-        $scrapedData = $scraper->scrapeWebsite($website_config);
+    $sources = get_option('ai_scraper_sources', []);
+    foreach ($sources as $source_config) {
+        $scrapedData = $scraper->scrapeWebsite($source_config);
         checkScrapedDataGenerateAiAndPost($scrapedData, 34); // Adjust as needed
     }
 }
 
-
-
-
-// Callback function to render the custom page content
-function news_scraper_render_custom_page() {
-    // check if the form has been submitted
-    if (isset($_POST['submit'])) {
-        // sanitize and store the input values
-        $openai_key = sanitize_text_field($_POST['openai_key']);
-
-        // update options in the database
-        update_option('news_scraper_openai_key', $openai_key);
-    }
-
-    // retrieve the values from the database
-    $value1 = get_option('news_scraper_openai_key', '');
-
-    ?>
-
-<div class="wrap">
-    <div class="ai-writer-box">
-    	<div class="ai-writer-box_container">
-            <h1>News Scraper</h1>
-            <form method="post" action="">
-                <h2>Plugin Settings</h2>
-                <p>
-                    <label>OpenAI API Key:</label><br>
-                    <input type="text" name="openai_key" value="<?php echo esc_attr($value1); ?>" placeholder="sk-">
-                </p>
-                <p>
-                    <input type="submit" id="news_scraper_save_settings" name="submit" value="Save Settings">
-                </p>
-            </form>
-
-            <input type="button" id="news_scraper_run_scraper" value="Run Scraper">
-
-            <br><br><br>
-            <label>Check if article exist: 
-            <input type="checkbox" id="check_article_exist"/></label>
-            <input type="text" id="news_scraper_url_input" placeholder="URL" />
-            <input type="button" id="news_scraper_run_from_url" value="Run From URL">
-
-        </div>
-    </div>
-</div>
-
-<?php
-}
-
-
+add_action('wp_ajax_run_scraper', 'ajax_run_scraper');
 function ajax_run_scraper() {
     require_once plugin_dir_path(__FILE__) . 'scrape-and-post.php';
     run_scraper_and_post();
     wp_die(); // Ensure proper AJAX response
 }
-add_action('wp_ajax_run_scraper', 'ajax_run_scraper');
 
 
+add_action('wp_ajax_run_scraper_from_url', 'ajax_run_scraper_from_url');
 function ajax_run_scraper_from_url() {
     require_once plugin_dir_path(__FILE__) . 'scrape-and-post.php';
-    $url = isset($_POST['news_scraper_url']) ? sanitize_text_field($_POST['news_scraper_url']) : '';
-    $check_article_exist = $_POST['check_article_exist'];
-   if (!empty($url)) {
-       run_scraper_from_url($url, $check_article_exist);
-   }
-    wp_die(); // Ensure proper AJAX response
+    $url = isset($_POST['url']) ? sanitize_text_field($_POST['url']) : '';
+    if (!empty($url)) {
+        $posted_url = run_scraper_from_url($url);
+       echo $posted_url;
+    }
+    wp_die(); 
 }
-add_action('wp_ajax_run_scraper_from_url', 'ajax_run_scraper_from_url');
+
+//
+//settings page
+//
+add_action('admin_init', 'save_open_ai_key');
+function save_open_ai_key() {
+    if (isset($_POST['action']) && $_POST['action'] == 'save_open_ai_key') {
+        $api_key = isset($_POST['open_ai_key']) ? sanitize_text_field($_POST['open_ai_key']) : '';
+        
+        update_option('open_ai_key_option', $api_key);
+    }
+}
+
+add_action('admin_init', 'save_output_language');
+function save_output_language() {
+    if (isset($_POST['action']) && $_POST['action'] == 'save_output_language') {
+        $language = isset($_POST['output_language']) ? sanitize_text_field($_POST['output_language']) : '';
+        
+        update_option('autoai_output_language', $language);
+    }
+}
+
+
+add_action('admin_init', 'save_ai_settings');
+function save_ai_settings() {
+    if (isset($_POST['action']) && $_POST['action'] == 'save_ai_settings') {
+        $open_ai_model = isset($_POST['open_ai_model']) ? sanitize_text_field($_POST['open_ai_model']) : '';
+        $word_count_per_open_ai_request = isset($_POST['word_count_per_open_ai_request']) ? sanitize_text_field($_POST['word_count_per_open_ai_request']) : '';
+        
+        update_option('open_ai_model', $open_ai_model);
+        update_option('word_count_per_open_ai_request', $word_count_per_open_ai_request);
+    }
+}
 
 
 ?>

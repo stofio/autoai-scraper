@@ -1,0 +1,10 @@
+Rewrite the provided article excerpt, preserving its original meaning, structure, and HTML formatting. 
+Expand the content's depth while omitting unrelated details. 
+Exclude references to videos, author names, credits, authors, unrelated sections and unrelated text that does not make sense in the context. The goal is a longer, enriched version of the text, focused solely on the article's content. Remove any parts that are not part of the story of the article, like related links, readings, recommendations...
+
+Here is the article excerpt to rewrite:
+"content": "{$contentPart}"
+
+If some of the "content" (or all) is out of context from the article '$title', exclude that part.
+Remember to exclude videos related text, author names, credits, and unrelated sections like 'releated readings', 'editor recommendations' sections with its content, ecc.
+The output should be a detailed, HTML-formatted text that mirrors the original's key points of the entire article, with longer pharagraphs.

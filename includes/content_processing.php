@@ -43,7 +43,7 @@ function sendToOpenAI($prompt) {
                 'Authorization: Bearer ' . API_KEY
             ],
             CURLOPT_POSTFIELDS => json_encode([
-                'model' => 'gpt-3.5-turbo-16k',
+                'model' => 'gpt-3.5-turbo',
                 'messages' => [['role' => 'user', 'content' => $prompt]]
             ])
         ]);
@@ -96,9 +96,6 @@ function getAiTitleAndExcerpt($contentAndTitle) {
         return null;
     }
 }
-
-
-
 
 function rewriteContent($content, $title) {
     $dom = new DOMDocument();
@@ -177,7 +174,7 @@ function rewriteContent($content, $title) {
 function getAIPieceOfArticle($contentPart, $title) {
     try {
         if (empty($contentPart)) {
-            throw new Exception('Content part is empty in getAIPieceOfArticle');
+            return;
         }
 
         $prompttt = <<<EOD
