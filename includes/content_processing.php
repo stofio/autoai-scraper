@@ -1,6 +1,6 @@
 <?php
 
-define('API_KEY', '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');
+define('API_KEY', '###');
 define('API_ENDPOINT', 'https://api.openai.com/v1/chat/completions');
 
 
