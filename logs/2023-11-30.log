@@ -1,0 +1,143 @@
+[2023-11-30 00:14:24] [INFO] Getting article: https://www.pcworld.com/article/2158035/as-flash-prices-rise-the-end-of-great-ssd-deals-may-be-near.html
+[2023-11-30 00:15:08] [INFO] Getting article: https://www.pcworld.com/article/2158035/as-flash-prices-rise-the-end-of-great-ssd-deals-may-be-near.html
+[2023-11-30 00:15:34] [INFO] Getting article: https://www.pcworld.com/article/2158035/as-flash-prices-rise-the-end-of-great-ssd-deals-may-be-near.html
+[2023-11-30 00:46:11] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 00:46:11] [INFO] Getting article: https://www.pcworld.com/article/2156578/nvidia-bundles-3-months-of-game-pass-with-new-rtx-cards.html
+[2023-11-30 00:46:12] [INFO] Scraped data success
+[2023-11-30 00:46:21] [INFO] AI content created success
+[2023-11-30 00:46:22] [INFO] SUCCESS POST posted with ID: 4850
+[2023-11-30 00:46:53] [INFO] START REWRITING: https://www.pcworld.com/article/2156578/nvidia-bundles-3-months-of-game-pass-with-new-rtx-cards.html
+[2023-11-30 00:46:53] [INFO] Getting article: https://www.pcworld.com/article/2156578/nvidia-bundles-3-months-of-game-pass-with-new-rtx-cards.html
+[2023-11-30 00:46:53] [INFO] Rescraped data success
+[2023-11-30 00:47:03] [INFO] AI content recreated success.
+[2023-11-30 00:47:03] [INFO] SUCCESS REWRITING updated ID: 4850
+[2023-11-30 00:49:19] [INFO] START REWRITING: https://www.pcworld.com/article/2156578/nvidia-bundles-3-months-of-game-pass-with-new-rtx-cards.html
+[2023-11-30 00:49:19] [INFO] Getting article: https://www.pcworld.com/article/2156578/nvidia-bundles-3-months-of-game-pass-with-new-rtx-cards.html
+[2023-11-30 00:49:19] [INFO] Rescraped data success
+[2023-11-30 00:49:27] [INFO] AI content recreated success.
+[2023-11-30 00:49:27] [INFO] SUCCESS REWRITING updated ID: 4850
+[2023-11-30 17:05:01] [ERROR] Error in scrapeWebsite: Category page last article not found.
+[2023-11-30 17:06:52] [ERROR] Error in scrapeWebsite: Category page last article not found.
+[2023-11-30 17:08:42] [INFO] Getting article: https://www.washingtonpost.com/business/technology/
+[2023-11-30 17:16:01] [INFO] Getting article: https://www.washingtonpost.com/business/technology/
+[2023-11-30 17:16:10] [ERROR] Error in scrapeWebsite: Error with title of scraped article.
+[2023-11-30 17:23:02] [INFO] Getting article: https://www.washingtonpost.com/business/technology/
+[2023-11-30 17:23:11] [ERROR] Error in scrapeWebsite: Error with title of scraped article.
+[2023-11-30 17:29:13] [ERROR] Error in scrapeWebsite: Category page last article not found.
+[2023-11-30 17:30:59] [INFO] Getting article: https://www.washingtonpost.com/technology/2023/11/30/biden-foreign-disinformation-social-media-election-interference/
+[2023-11-30 17:31:58] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2023-11-30 17:31:58] [INFO] Getting article: https://www.digitaltrends.com/computing/asus-rog-ally-z1-price-drop/
+[2023-11-30 17:31:58] [INFO] Scraped data success
+[2023-11-30 17:32:22] [INFO] AI content created success
+[2023-11-30 17:32:24] [INFO] SUCCESS POST posted with ID: 4869
+[2023-11-30 17:32:24] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-11-30 17:32:26] [INFO] Getting article: https://www.tomshardware.com/news/nvidia-rtx-4090d-leaked-gpu
+[2023-11-30 17:32:26] [INFO] Scraped data success
+[2023-11-30 17:32:43] [INFO] AI content created success
+[2023-11-30 17:32:44] [INFO] SUCCESS POST posted with ID: 4871
+[2023-11-30 17:32:44] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 17:32:44] [INFO] Getting article: https://www.pcworld.com/article/2158035/as-flash-prices-rise-the-end-of-great-ssd-deals-may-be-near.html
+[2023-11-30 17:32:44] [INFO] Scraped data success
+[2023-11-30 17:32:58] [INFO] AI content created success
+[2023-11-30 17:32:59] [INFO] SUCCESS POST posted with ID: 4873
+[2023-11-30 17:33:00] [INFO] START WITH SOURCE: https://www.washingtonpost.com/business/technology/
+[2023-11-30 17:33:08] [INFO] Getting article: https://www.washingtonpost.com/technology/2023/11/30/biden-foreign-disinformation-social-media-election-interference/
+[2023-11-30 17:33:17] [INFO] Scraped data success
+[2023-11-30 17:33:40] [INFO] AI content created success
+[2023-11-30 17:33:49] [INFO] SUCCESS POST posted with ID: 4875
+[2023-11-30 17:41:51] [INFO] START REWRITING: https://www.washingtonpost.com/technology/2023/11/30/biden-foreign-disinformation-social-media-election-interference/
+[2023-11-30 17:41:51] [INFO] Getting article: https://www.washingtonpost.com/technology/2023/11/30/biden-foreign-disinformation-social-media-election-interference/
+[2023-11-30 17:41:59] [INFO] Rescraped data success
+[2023-11-30 17:42:24] [INFO] AI content recreated success.
+[2023-11-30 17:42:24] [INFO] SUCCESS REWRITING updated ID: 4875
+[2023-11-30 17:49:39] [INFO] Getting article: https://www.washingtonpost.com/technology/2023/11/30/biden-foreign-disinformation-social-media-election-interference/
+[2023-11-30 17:49:49] [INFO] Skipped, not article type text: https://www.washingtonpost.com/technology/2023/11/30/biden-foreign-disinformation-social-media-election-interference/
+[2023-11-30 17:52:25] [INFO] Getting article: https://www.washingtonpost.com/technology/2023/11/30/biden-foreign-disinformation-social-media-election-interference/
+[2023-11-30 17:53:26] [INFO] START WITH SOURCE: https://www.washingtonpost.com/business/technology/
+[2023-11-30 17:53:26] [INFO] Getting article: https://www.washingtonpost.com/business/2023/11/30/cybertruck-launch-delivery-event-tesla/
+[2023-11-30 17:53:35] [INFO] Skipped, not article type text: https://www.washingtonpost.com/business/2023/11/30/cybertruck-launch-delivery-event-tesla/
+[2023-11-30 17:54:06] [INFO] START WITH SOURCE: https://www.washingtonpost.com/business/technology/
+[2023-11-30 17:54:06] [INFO] Getting article: https://www.washingtonpost.com/technology/2023/11/29/openai-microsoft-board-seat-altman/
+[2023-11-30 17:54:16] [INFO] Scraped data success
+[2023-11-30 17:54:35] [INFO] AI content created success
+[2023-11-30 17:54:44] [INFO] SUCCESS POST posted with ID: 4878
+[2023-11-30 18:03:38] [INFO] START WITH SOURCE: https://www.washingtonpost.com/business/technology/
+[2023-11-30 18:03:38] [INFO] Getting article: https://www.washingtonpost.com/technology/2023/11/28/amazon-missed-mail-rural-towns/
+[2023-11-30 18:03:47] [ERROR] Error in scrapeWebsite: Error with title of scraped article.
+[2023-11-30 18:03:47] [ERROR] Invalid scraped data format: 
+[2023-11-30 18:06:02] [INFO] START WITH SOURCE: https://www.washingtonpost.com/business/technology/
+[2023-11-30 18:06:02] [INFO] Getting article: https://www.washingtonpost.com/technology/2023/11/28/amazon-missed-mail-rural-towns/
+[2023-11-30 18:06:10] [ERROR] Error in scrapeWebsite: Error with content of scraped article.
+[2023-11-30 18:06:10] [ERROR] Invalid scraped data format: 
+[2023-11-30 18:11:15] [INFO] START WITH SOURCE: https://www.washingtonpost.com/business/technology/
+[2023-11-30 18:11:15] [INFO] Getting article: https://www.washingtonpost.com/technology/2023/11/28/amazon-missed-mail-rural-towns/
+[2023-11-30 18:11:24] [INFO] Scraped data success
+[2023-11-30 18:12:05] [INFO] AI content created success
+[2023-11-30 18:12:14] [ERROR] Error in uploading image: Sorry, you are not allowed to upload this file type.
+[2023-11-30 18:12:24] [INFO] SUCCESS POST posted with ID: 0
+[2023-11-30 19:17:25] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 19:17:25] [INFO] Getting article: https://www.pcworld.com/article/2139208/asus-appeases-wrathful-evangelion-fans-after-robo-mobo-typo.html
+[2023-11-30 19:17:25] [INFO] Scraped data success
+[2023-11-30 19:17:38] [INFO] AI content created success
+[2023-11-30 19:17:40] [INFO] SUCCESS POST posted with ID: 4881
+[2023-11-30 20:18:41] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 20:18:41] [INFO] Getting article: https://www.pcworld.com/article/2137533/intels-sweet-apo-tech-wont-come-to-12th-or-13th-gen-cpus.html
+[2023-11-30 20:18:41] [INFO] Scraped data success
+[2023-11-30 20:18:57] [INFO] AI content created success
+[2023-11-30 20:19:03] [INFO] SUCCESS POST posted with ID: 4885
+[2023-11-30 20:22:18] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 20:22:18] [INFO] Getting article: https://www.pcworld.com/article/2132550/nvidia-may-unveil-4070-super-and-4080-super-cards-in-january.html
+[2023-11-30 20:22:19] [INFO] Scraped data success
+[2023-11-30 20:22:29] [INFO] AI content created success
+[2023-11-30 20:22:32] [INFO] SUCCESS POST posted with ID: 0
+[2023-11-30 20:23:37] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 20:23:37] [INFO] Getting article: https://www.pcworld.com/article/2132550/nvidia-may-unveil-4070-super-and-4080-super-cards-in-january.html
+[2023-11-30 20:23:37] [INFO] Skipped, already scraped: https://www.pcworld.com/article/2132550/nvidia-may-unveil-4070-super-and-4080-super-cards-in-january.html
+[2023-11-30 20:25:10] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 20:25:10] [INFO] Getting article: https://www.pcworld.com/article/2131057/vram-explained-how-it-works-how-much-you-need-for-gaming.html
+[2023-11-30 20:25:10] [INFO] Scraped data success
+[2023-11-30 20:25:19] [INFO] AI content created success
+[2023-11-30 20:25:21] [INFO] SUCCESS POST posted with ID: 4888
+[2023-11-30 20:28:56] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 20:28:56] [INFO] Getting article: https://www.pcworld.com/article/2130931/lgs-latest-giant-ultrawide-monitors-are-surprisingly-affordable.html
+[2023-11-30 20:28:56] [INFO] Scraped data success
+[2023-11-30 20:29:05] [INFO] AI content created success
+[2023-11-30 20:29:07] [INFO] SUCCESS POST posted with ID: 4890
+[2023-11-30 20:34:05] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 20:34:05] [INFO] Getting article: https://www.pcworld.com/article/2129188/your-razer-mouse-might-be-a-lot-faster-with-the-latest-firmware.html
+[2023-11-30 20:34:06] [INFO] Scraped data success
+[2023-11-30 20:34:26] [INFO] AI content created success
+[2023-11-30 20:34:27] [INFO] SUCCESS POST posted with ID: 0
+[2023-11-30 20:35:28] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 20:35:28] [INFO] Getting article: https://www.pcworld.com/article/2129188/your-razer-mouse-might-be-a-lot-faster-with-the-latest-firmware.html
+[2023-11-30 20:35:28] [INFO] Skipped, already scraped: https://www.pcworld.com/article/2129188/your-razer-mouse-might-be-a-lot-faster-with-the-latest-firmware.html
+[2023-11-30 20:35:55] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 20:35:55] [INFO] Getting article: https://www.pcworld.com/article/2124706/sd-express-9-1-new-standard-ensures-transfers-at-almost-2-gb-per-second.html
+[2023-11-30 20:35:56] [INFO] Scraped data success
+[2023-11-30 20:36:15] [INFO] AI content created success
+[2023-11-30 20:36:17] [INFO] SUCCESS POST posted with ID: 4894
+[2023-11-30 22:29:39] [INFO] START REWRITING: https://www.pcworld.com/article/2130931/lgs-latest-giant-ultrawide-monitors-are-surprisingly-affordable.html
+[2023-11-30 22:29:39] [INFO] Getting article: https://www.pcworld.com/article/2130931/lgs-latest-giant-ultrawide-monitors-are-surprisingly-affordable.html
+[2023-11-30 22:29:39] [INFO] Rescraped data success
+[2023-11-30 22:29:48] [INFO] AI content recreated success.
+[2023-11-30 22:29:48] [INFO] SUCCESS REWRITING updated ID: 4890
+[2023-11-30 23:31:54] [INFO] START REWRITING: https://www.pcworld.com/article/2130931/lgs-latest-giant-ultrawide-monitors-are-surprisingly-affordable.html
+[2023-11-30 23:31:54] [INFO] Getting article: https://www.pcworld.com/article/2130931/lgs-latest-giant-ultrawide-monitors-are-surprisingly-affordable.html
+[2023-11-30 23:31:54] [INFO] Rescraped data success
+[2023-11-30 23:32:03] [INFO] AI content recreated success.
+[2023-11-30 23:32:03] [INFO] SUCCESS REWRITING updated ID: 4890
+[2023-11-30 23:35:30] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-11-30 23:35:30] [INFO] Getting article: https://www.pcworld.com/article/2116463/qualcomms-upcoming-snapdragon-is-the-chip-we-begged-intel-to-make.html
+[2023-11-30 23:35:30] [INFO] Scraped data success
+[2023-11-30 23:35:47] [INFO] AI content created success
+[2023-11-30 23:36:00] [INFO] SUCCESS POST posted with ID: 4904
+[2023-11-30 23:36:40] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2023-11-30 23:36:40] [INFO] Getting article: https://www.digitaltrends.com/mobile/google-pixel-watch-2-full-charge-battery-notifications-news/
+[2023-11-30 23:36:40] [INFO] Scraped data success
+[2023-11-30 23:36:54] [INFO] AI content created success
+[2023-11-30 23:36:54] [INFO] SUCCESS POST posted with ID: 4907
+[2023-11-30 23:40:15] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2023-11-30 23:40:15] [INFO] Getting article: https://www.digitaltrends.com/computing/intel-core-ultra-processors-appear-in-new-leak/
+[2023-11-30 23:40:15] [INFO] Scraped data success
+[2023-11-30 23:40:33] [INFO] AI content created success
+[2023-11-30 23:40:35] [INFO] SUCCESS POST posted with ID: 4910

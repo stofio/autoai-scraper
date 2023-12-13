@@ -1,0 +1,66 @@
+[2023-11-27 01:49:52] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2023-11-27 01:49:52] [INFO] Scraped data success
+[2023-11-27 01:50:17] [INFO] AI content created success
+[2023-11-27 01:50:18] [INFO] SUCCESS POST posted with ID: 4637
+[2023-11-27 01:50:19] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-11-27 01:50:19] [INFO] Scraped data success
+[2023-11-27 01:50:32] [INFO] AI content created success
+[2023-11-27 01:50:33] [INFO] SUCCESS POST posted with ID: 4639
+[2023-11-27 11:14:02] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2023-11-27 11:14:02] [INFO] Scraped data success
+[2023-11-27 11:14:24] [INFO] AI content created success
+[2023-11-27 11:14:24] [INFO] SUCCESS POST posted with ID: 4643
+[2023-11-27 11:14:25] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-11-27 11:14:32] [INFO] Scraped data success
+[2023-11-27 11:14:33] [ERROR] Error decoding JSON in getAiTitleAndExcerpt or accessing content field
+[2023-11-27 11:16:29] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2023-11-27 11:16:29] [INFO] Skipped, already scraped: https://www.digitaltrends.com/mobile/tech-youtuber-accuses-casetify-of-copyright-infringement/
+[2023-11-27 11:16:30] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-11-27 11:16:30] [INFO] Scraped data success
+[2023-11-27 11:16:30] [ERROR] Error decoding JSON in getAiTitleAndExcerpt or accessing content field
+[2023-11-27 11:18:32] [INFO] AI content created success
+[2023-11-27 11:18:32] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/y2TGayL847tYwbQpmzfGyX.jpg
+[2023-11-27 11:18:32] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/bXMh4Tntw4HGLQBUgjcSmR.jpg
+[2023-11-27 11:18:33] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/zJDrx8eCcL9XNcfHF5TeM5.jpg
+[2023-11-27 11:18:33] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/z75HYPHicGiXqygfn6XWve.jpg
+[2023-11-27 11:18:33] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/PMBdDJzPZqcAWwoHrQPuiW-200-100.jpg
+[2023-11-27 11:18:37] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/sRRaLGrxpHWBuqDRxQGTUi-200-100.jpg
+[2023-11-27 11:18:41] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/8Bd7pWPHSm5ctLX5XMW8a3.png
+[2023-11-27 11:18:41] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/8Bd7pWPHSm5ctLX5XMW8a3-200-100.png
+[2023-11-27 11:18:43] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/Wu8cxGjDdeSh5iekEBPsWS-200-100.png
+[2023-11-27 11:18:46] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/NsyhPzRk42kDSot3stWpwm.jpg
+[2023-11-27 11:18:46] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/pyvgVnoeWEZ2PbbXqbrPi4-200-100.png
+[2023-11-27 11:18:48] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/FArGSRJaBCzWb7JD9eXfBa-200-100.png
+[2023-11-27 11:18:48] [ERROR] Failed to download image: https://cdn.mos.cms.futurecdn.net/G7pqxosd97mA8JY5EDrCYU.png
+[2023-11-27 11:18:50] [ERROR] Failed to attach image: cURL error 60: SSL certificate problem: certificate has expired
+[2023-11-27 11:18:50] [ERROR] Failed to attach featured image: cURL error 60: SSL certificate problem: certificate has expired
+[2023-11-27 11:18:50] [ERROR] Failed to process and post article: https://www.tomshardware.com/news/15-great-deals-under-50-for-tech-enthusiasts
+[2023-11-27 11:25:33] [ERROR] Error decoding JSON getAIPieceOfArticle or accessing content field
+[2023-11-27 11:25:46] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2023-11-27 11:25:46] [INFO] Skipped, already scraped: https://www.digitaltrends.com/mobile/tech-youtuber-accuses-casetify-of-copyright-infringement/
+[2023-11-27 11:25:46] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-11-27 11:25:53] [INFO] Scraped data success
+[2023-11-27 11:25:53] [ERROR] Error decoding JSON in getAiTitleAndExcerpt or accessing content field
+[2023-11-27 11:25:58] [INFO] AI content created success
+[2023-11-27 11:26:19] [INFO] SUCCESS POST posted with ID: 0
+[2023-11-27 11:27:47] [INFO] AI content created success
+[2023-11-27 11:28:08] [INFO] SUCCESS POST posted with ID: 0
+[2023-11-27 11:34:23] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2023-11-27 11:34:23] [INFO] Skipped, already scraped: https://www.digitaltrends.com/mobile/tech-youtuber-accuses-casetify-of-copyright-infringement/
+[2023-11-27 11:34:23] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-11-27 11:34:24] [INFO] Skipped, already scraped: https://www.tomshardware.com/news/15-great-deals-under-50-for-tech-enthusiasts
+[2023-11-27 11:50:30] [INFO] Scraped data success
+[2023-11-27 11:50:59] [INFO] AI content created success
+[2023-11-27 11:51:01] [INFO] SUCCESS POST posted with ID: 4737
+[2023-11-27 11:52:00] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2023-11-27 11:52:00] [INFO] Skipped, already scraped: https://www.digitaltrends.com/mobile/tech-youtuber-accuses-casetify-of-copyright-infringement/
+[2023-11-27 11:52:00] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-11-27 11:52:01] [INFO] Skipped, already scraped: https://www.tomshardware.com/news/15-great-deals-under-50-for-tech-enthusiasts
+[2023-11-27 17:24:32] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2023-11-27 17:24:32] [INFO] Scraped data success
+[2023-11-27 17:25:00] [INFO] AI content created success
+[2023-11-27 17:25:02] [INFO] SUCCESS POST posted with ID: 4744
+[2023-11-27 17:25:02] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-11-27 17:25:04] [INFO] Scraped data success
+[2023-11-27 17:25:27] [INFO] AI content created success
+[2023-11-27 17:25:30] [INFO] SUCCESS POST posted with ID: 4752

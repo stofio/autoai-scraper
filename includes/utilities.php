@@ -105,3 +105,18 @@ function my_second_log($level, $message) {
 function isValidUrl($url) {
     return filter_var($url, FILTER_VALIDATE_URL) !== false;
 }
+
+function getBaseUrl($url) {
+   // $url = 'https://www.tomshardware.com/pc-components/news';
+
+    // Parse the URL
+    $parsed_url = parse_url($url);
+
+    // Get the host component
+    $host = $parsed_url['host'];
+
+    // Remove 'www.' if it exists
+    $host_without_www = preg_replace('/^www\./', '', $host);
+
+    return $host_without_www;
+}

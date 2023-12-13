@@ -1,6 +1,6 @@
 <?php
 
-define('API_KEY', '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');
+define('API_KEY', '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');
 define('API_ENDPOINT', 'https://api.openai.com/v1/chat/completions');
 
 
@@ -12,7 +12,6 @@ function generateContentWithAI($article) {
         return 'error'; // Propagate the error
     }
 
-    //$content = getAiContent($article);
 
     $content = rewriteContent($article['content'], $article['title']);
 
@@ -43,7 +42,7 @@ function sendToOpenAI($prompt) {
                 'Authorization: Bearer ' . API_KEY
             ],
             CURLOPT_POSTFIELDS => json_encode([
-                'model' => 'gpt-3.5-turbo-16k',
+                'model' => get_option('open_ai_model'),
                 'messages' => [['role' => 'user', 'content' => $prompt]]
             ])
         ]);
@@ -67,20 +66,24 @@ function getAiTitleAndExcerpt($contentAndTitle) {
             throw new Exception('Invalid input array in getAiTitleAndExcerpt');
         }
 
+        $lang = get_option('autoai_output_language');
+
         $prompt = <<<EOD
             Im giving you next a news article in the PC niche. 
-            I need you to rewrite only the excerpt and title, the title should be very similar to the original, and I need you to return it in JSON format (only json), exactly like the example, without the "content". Remember to make a similar title as the original.
+            I need you to rewrite only the excerpt and title in {$lang}, the title should be very similar to the original, and I need you to return it in JSON format (only json), exactly like the example, without the "content". Remember to make a similar title as the original.
             So this is the original article:
             {
                 "title": "{$contentAndTitle['title']}",
                 "content": "{$contentAndTitle['content']}"
             }
-            So, I need you to return ONLY json for title and excerpt, nothing else before or after, like this example:
+            So, I need you to return ONLY json for title and excerpt in {$lang}, nothing else before or after, like this example:
             {
                 "title": "",
                 "excerpt": ""
             }
         EOD;
+
+
 
         $responseArray = sendToOpenAI($prompt);
 
@@ -96,9 +99,6 @@ function getAiTitleAndExcerpt($contentAndTitle) {
         return null;
     }
 }
-
-
-
 
 function rewriteContent($content, $title) {
     $dom = new DOMDocument();
@@ -119,7 +119,7 @@ function rewriteContent($content, $title) {
             $paragraphText = $node->textContent;
             $wordCount = str_word_count($paragraphText);
 
-            if ($currentWordCount + $wordCount > 400) {
+            if ($currentWordCount + $wordCount > get_option('word_count_per_open_ai_request', '')) {
                 // Check if last node was a heading
                 if ($lastNode && in_array($lastNode->nodeName, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img'])) {
                     $detachedHeading = $lastNode->parentNode->removeChild($lastNode);
@@ -177,61 +177,34 @@ function rewriteContent($content, $title) {
 function getAIPieceOfArticle($contentPart, $title) {
     try {
         if (empty($contentPart)) {
-            throw new Exception('Content part is empty in getAIPieceOfArticle');
+            return;
         }
 
-        $prompttt = <<<EOD
-            I am providing a portion of an article scraped from the web for rewriting. This is a part of a larger article. Your task is to read this part and thoroughly rewrite it and restructure it. The rewritten version should be as long or longer than the original, with an emphasis on expanding and enriching the content while maintaining accuracy. Keep all the HTML images tags unchanged. Also be carefull to ignore into the rewritten content all links and unrelated information and data to the article point (like 'related links', captions, author names, credits). Here are the specific instructions:
+        $lang = get_option('autoai_output_language');
 
-            - Expand, restructure and Enrich Content: Ensure the rewritten part matches or exceeds the word count of the original. Actively expand on points by providing additional context, detailed explanations, relevant examples, and supplementary information that enhances the depth and breadth of the content.
-
-            - Maintain Essential Information: Preserve all key information and facts from the original part. Each point in the original should be clearly reflected and expanded upon in the rewritten version and if possible reordering it.
-
-            - Handle Image Tags with Precision: Keep any existing image tags (<img src=...>) in their original positions within the text. Remove any sources or credits associated with these images. Do not create or infer new image tags.
-
-            - Remove Video Descriptions: Exclude any descriptions or content related to videos in the original article.
-
-            - Remove author names, credits and unrelated parts to the article.
-
-            Here's the original content part:
-
-            {
-            "content": "{$contentPart}"
-            }
-
-            Retain existing <img> tags in their exact positions, removing image credits. 
-            Also, remove links to other articles and sections like 'related content', 'recommendations', 'suggested articles'. 
-            Your goal is to return a comprehensively rewritten version of this part of the content in HTML format. This version should be as extensive as or more detailed than the original, without any additional comments or explanations.
-        EOD;
-
-
-        $prompdddt = <<<EOD
-            In this task we are rewriting a piece of an entire article, focus only on this piece. Please rewrite the provided part of the article while maintaining the original meaning and structure. Ensure the rewritten text is more lengthy and style as the original, following the same HTML tags structure. Follow these guidelines:
-
-            - Aim for a rewritten version that expands the depth of the content, keeping essential information and omitting extraneous details.
-            - Preserve the html structural.
-            - Do not include additional comments, links, credits, or unrelated content to the article.
-            - Exclude any references to videos, author names, credits, and unrelated sections like 'related links', 'Recommendations' or 'suggestions'.
-            
-
-            Here is the part of the article to be rewritten and to expand:
-            "content": "{$contentPart}"
-
-            The expected output is a rewritten text in HTML format, accurately reflecting the original's points, making a longer text, and adhering to the specified requirements. Don't forget that this is just a piece of the entire article.
-        EOD;
-
-        $prompt = <<<EOD
-        Rewrite the provided article excerpt, preserving its original meaning, structure, and HTML formatting. 
+        $originalPrompt = <<<EOD
+        Rewrite in {$lang} the provided article excerpt, preserving its original meaning, structure, and HTML formatting. 
         Expand the content's depth while omitting unrelated details. 
-        Exclude references to videos, author names, credits, authors, unrelated sections and unrelated text that does not make sense in the context. The goal is a longer, enriched version of the text, focused solely on the article's content. Remove any parts that are not part of the story of the article, like related links, readings, recommendations...
+        Exclude references to videos, credits, unrelated sections and unrelated text that is not part of the article context. The goal is a longer, enriched version of the text, focused solely on the article's content. Remove any parts that are not part of the story of the article, like related links, readings, recommendations...
 
         Here is the article excerpt to rewrite:
         "content": "{$contentPart}"
 
-        If some of the "content" (or all) is out of context from the article '$title', exclude that part.
-        Remember to exclude videos related text, author names, credits, and unrelated sections like 'releated readings', 'editor recommendations' sections with its content, ecc.
-        The output should be a detailed, HTML-formatted text that mirrors the original's key points of the entire article, with longer pharagraphs.
+        Some of the "content" (or all of the given) is out of context from the article '{$title}', exclude that part.
+        Remember to exclude videos related text, credits, and unrelated sections like 'releated readings', 'editor recommendations' sections with its content, ecc.
+        The output should be a detailed, HTML-formatted text in {$lang} language that mirrors the original's key points of the entire article, with longer pharagraphs.
         EOD;
+
+
+        $savedPrompt = get_option('prompt_partial_text', '');
+
+        if($savedPrompt === '') {
+            $prompt = $originalPrompt;
+        }
+        else {
+            $swapped = str_replace(['{$lang}', '{$contentPart}', '{$title}'], [$lang, $contentPart, $title], $savedPrompt);
+            $prompt = stripslashes($swapped);
+        }
 
 
         $responseArray = sendToOpenAI($prompt);
@@ -383,44 +356,5 @@ function getAiContent($contentAndTitle) {
     }
 }
 
-function getAiContentOLDWORKING($contentAndTitle) {
-    if (!isset($contentAndTitle['title'], $contentAndTitle['content'])) {
-        my_second_log('ERROR', 'Invalid input array in getAiContent');
-        return null;
-    }
 
-    $prompt = <<<EOD
-        I am providing a scraped news article from the PC technology niche for rewriting. Your task is to read the article, understand the content, extract and focus solely on the main content of the news, expanding and enriching it while maintaining accuracy. Specifically:
-        
-        - Exclude Unrelated Sections: Omit any 'related content', 'recommendations', 'suggested articles', or other parts not directly related to the main news story.
-        
-        - Handle Image Tags Carefully: Retain all existing image tags (<img src=...>) in their original positions, removing sources or credits associated with these images. However, do not create or infer any new image tags if they are not explicitly present in the original text. This includes not converting textual mentions of images (like '<span></span>(Image credit: Asus)') into image tags.
-        
-        - Omit Descriptions of Videos: Any video descriptions within the article should be removed.
-        
-        Here's the original article:
-
-        {
-        "title": "{$contentAndTitle['title']}",
-        "content": "{$contentAndTitle['content']}"
-        }
-
-        Rewrite this article and subtitles, focusing on making the content longer and more informative, but do not use the same sentences. In the article, leave existing <img tags as they are, matching their position in the text, but removing any credits related to the image. Do not create or infer new image tags. Also, remove links to other articles and sections like 'related content', 'recommendations', 'suggested articles'.
-        
-        Please return only the rewritten main content in HTML format, without any additional comments or explanations.
-    EOD;
-
-    
-    $responseArray = sendToOpenAI($prompt);
-
-    // Check if json_decode was successful and the expected keys exist
-    if (json_last_error() === JSON_ERROR_NONE &&
-        isset($responseArray['choices'][0]['message']['content'])) {
-        $theContent = $responseArray['choices'][0]['message']['content'];
-        return $theContent;
-    } else {
-        my_second_log("ERROR", "Error decoding JSON getAiContent or accessing content field.");
-        return null;
-    }
-}
 

@@ -1,0 +1,5 @@
+# Ignore logs folder
+logs/
+
+# Ignore scraped_urls.json file
+scraped_urls.json

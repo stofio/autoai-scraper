@@ -16,10 +16,34 @@ function createNewPost($article, $categoryID) {
 
         $attach_id = attachFeaturedImage($post_id, $article);
         if (is_wp_error($attach_id)) {
-            throw new Exception('Failed to attach featured image: ' . $attach_id->get_error_message());
+            my_second_log('INFO', 'Failed to attach featured image');
         }
 
         return $post_id;
+    } catch (Exception $e) {
+        my_second_log('ERROR', $e->getMessage());
+        return 'error';
+    }
+}
+
+
+function recreatePost($article, $post_id) {
+    try {
+        $content = trim($article['content']);
+        if (empty($content)) {
+            throw new Exception('Content is empty, article cannot be created.');
+        }
+
+        $content = getAndDownloadImagesInNewContent($content);
+
+        $post_id = updatePost($article, $post_id);
+
+        if (is_wp_error($post_id)) {
+            throw new Exception('Failed to update post: ' . $post_id->get_error_message());
+        }
+        else {
+            return $post_id;
+        }
     } catch (Exception $e) {
         my_second_log('ERROR', $e->getMessage());
         return 'error';
@@ -46,6 +70,29 @@ function insertPost($article, $categoryID) {
     }
 
     return $post_id; // Return the ID of the new post
+}
+
+
+function updatePost($article, $post_id) {
+    $post_data = array(
+        'ID'            => $post_id,
+        'post_title'    => $article['title'],
+        'post_excerpt'  => $article['excerpt'],
+        'post_content'  => $article['content'],
+        'post_status'   => 'publish',
+        'post_author'   => 1, // or another user ID
+        'post_type'     => 'post',
+        'post_category' => array($categoryID)
+    );
+
+    $updated_post_id = wp_update_post($post_data);
+
+    if (is_wp_error($updated_post_id)) {
+        my_second_log('ERROR', 'Failed to update post: ' . $updated_post_id->get_error_message());
+        return $updated_post_id; // Return WP_Error object
+    }
+
+    return $updated_post_id; // Return the ID of the updated post
 }
 
 

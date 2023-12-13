@@ -1,0 +1,44 @@
+[2023-12-06 14:14:15] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2023-12-06 14:14:15] [INFO] Getting article: https://www.digitaltrends.com/computing/windows-10-end-of-life-extended-with-paid-security-updates/
+[2023-12-06 14:14:15] [INFO] Scraped data success
+[2023-12-06 14:14:42] [INFO] AI content created success
+[2023-12-06 14:14:43] [INFO] SUCCESS POST posted with ID: 4989
+[2023-12-06 14:18:10] [INFO] Getting article: https://www.pcworld.com/article/2161838/intel-fud-site-slams-amd-for-misleading-ryzen-branding.html
+[2023-12-06 15:25:50] [INFO] Getting article: https://www.pcworld.com/article/2161838/intel-fud-site-slams-amd-for-misleading-ryzen-branding.html
+[2023-12-06 15:27:24] [INFO] Getting article: https://www.pcworld.com/article/2161838/intel-fud-site-slams-amd-for-misleading-ryzen-branding.html
+[2023-12-06 15:36:18] [INFO] Getting article: https://www.pcworld.com/article/2161838/intel-fud-site-slams-amd-for-misleading-ryzen-branding.html
+[2023-12-06 15:39:02] [INFO] Getting article: https://www.pcworld.com/article/2161838/intel-fud-site-slams-amd-for-misleading-ryzen-branding.html
+[2023-12-06 15:54:32] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-12-06 15:54:32] [INFO] Getting article: https://www.pcworld.com/article/2161838/intel-fud-site-slams-amd-for-misleading-ryzen-branding.html
+[2023-12-06 15:54:32] [INFO] Skipped, already scraped: https://www.pcworld.com/article/2161838/intel-fud-site-slams-amd-for-misleading-ryzen-branding.html
+[2023-12-06 18:00:29] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-12-06 18:00:29] [INFO] Getting article: https://www.tomshardware.com/pc-components/cpus/amd-advancing-ai-event-live-blog-instinct-mi300-launch-ryzen-8000-hawk-point-expected
+[2023-12-06 18:00:29] [INFO] Scraped data success
+[2023-12-06 18:00:45] [INFO] AI content created success
+[2023-12-06 18:00:46] [INFO] SUCCESS POST posted with ID: 0
+[2023-12-06 18:02:39] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-12-06 18:02:39] [INFO] Getting article: https://www.tomshardware.com/pc-components/cpus/amd-advancing-ai-event-live-blog-instinct-mi300-launch-ryzen-8000-hawk-point-expected
+[2023-12-06 18:02:40] [INFO] Skipped, already scraped: https://www.tomshardware.com/pc-components/cpus/amd-advancing-ai-event-live-blog-instinct-mi300-launch-ryzen-8000-hawk-point-expected
+[2023-12-06 18:04:38] [ERROR] There is no configuration for this website url
+[2023-12-06 18:46:08] [INFO] START WITH SOURCE: https://www.pcworld.com/pc-components/news
+[2023-12-06 18:46:08] [INFO] Getting article: https://www.pcworld.com/article/2161838/intel-fud-site-slams-amd-for-misleading-ryzen-branding.html
+[2023-12-06 18:46:08] [INFO] Skipped, already scraped: https://www.pcworld.com/article/2161838/intel-fud-site-slams-amd-for-misleading-ryzen-branding.html
+[2023-12-06 18:46:20] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-12-06 18:46:20] [INFO] Getting article: https://www.tomshardware.com/pc-components/cpus/amd-advancing-ai-event-live-blog-instinct-mi300-launch-ryzen-8000-hawk-point-expected
+[2023-12-06 18:46:20] [INFO] Skipped, not article type text: https://www.tomshardware.com/pc-components/cpus/amd-advancing-ai-event-live-blog-instinct-mi300-launch-ryzen-8000-hawk-point-expected
+[2023-12-06 18:47:07] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-12-06 18:47:07] [INFO] Getting article: https://www.tomshardware.com/pc-components/cpus/amd-advancing-ai-event-live-blog-instinct-mi300-launch-ryzen-8000-hawk-point-expected
+[2023-12-06 18:47:07] [INFO] Scraped data success
+[2023-12-06 18:48:11] [INFO] AI content created success
+[2023-12-06 18:48:47] [INFO] SUCCESS POST posted with ID: 0
+[2023-12-06 18:57:21] [INFO] START WITH SOURCE: https://www.tomshardware.com/pc-components/news
+[2023-12-06 18:57:21] [INFO] Getting article: https://www.tomshardware.com/pc-components/cpus/amd-advancing-ai-event-live-blog-instinct-mi300-launch-ryzen-8000-hawk-point-expected
+[2023-12-06 18:57:21] [INFO] Scraped data success
+[2023-12-06 18:57:55] [INFO] AI content created success
+[2023-12-06 18:58:31] [INFO] SUCCESS POST posted with ID: 5049
+[2023-12-06 22:18:05] [INFO] START WITH SOURCE: https://variety.com/v/film/
+[2023-12-06 22:18:05] [INFO] Getting article: https://variety.com/2023/film/news/jonathan-majors-accuser-testifies-assault-trial-1235824268/
+[2023-12-06 22:18:05] [ERROR] Error in scrapeWebsite: duzun\hQuery\Parser\Selector: Unexpected '\' at 52 in "#main-wrapper > main > section.article-with-sidebar.\/\/ > div > article > div.a-content.a-content--logo-end.u-font-family-body.lrv-u-line-height-normal.lrv-u-font-size-18.u-max-width-600\@tablet.u-max-width-640\@desktop-xl.lrv-u-margin-l-auto.lrv-u-margin-b-1 > div.vy-cx-page-content > div.pmc-paywall"
+[2023-12-06 22:18:05] [ERROR] Invalid scraped data format: 
+[2023-12-06 22:19:16] [ERROR] Error in scrapeWebsite: duzun\hQuery\Parser\Selector: Unexpected '\' at 40 in "#main-wrapper > main > div.u-padding-t-1\@mobile-max > div.lrv-a-wrapper.lrv-u-margin-t-1\@tablet.lrv-u-margin-b-2 > div > div > section.latest-news-river.\/\/.js-LatestNewsButton-ScrollDestination.lrv-u-flex.lrv-u-flex-direction-column.u-border-t-6.u-border-color-picked-bluewood.u-box-shadow-menu.u-padding-lr-075.u-padding-lr-1\@tablet.lrv-u-background-color-white.a-span2\@tablet.a-span3\@desktop-xl.lrv-u-height-100p > ul.o-tease-news-list.lrv-a-unstyle-list.u-margin-t-075.u-margin-t-125\@tablet > li:nth-child(1)"
+[2023-12-06 22:23:15] [ERROR] Error in scrapeWebsite: duzun\hQuery\Parser\Selector: Unexpected '\' at 40 in "#main-wrapper > main > div.u-padding-t-1\@mobile-max > div.lrv-a-wrapper.lrv-u-margin-t-1\@tablet.lrv-u-margin-b-2 > div > div > section.latest-news-river.\/\/.js-LatestNewsButton-ScrollDestination.lrv-u-flex.lrv-u-flex-direction-column.u-border-t-6.u-border-color-picked-bluewood.u-box-shadow-menu.u-padding-lr-075.u-padding-lr-1\@tablet.lrv-u-background-color-white.a-span2\@tablet.a-span3\@desktop-xl.lrv-u-height-100p > ul.o-tease-news-list.lrv-a-unstyle-list.u-margin-t-075.u-margin-t-125\@tablet > li:nth-child(1)"

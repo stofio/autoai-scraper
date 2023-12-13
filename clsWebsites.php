@@ -35,6 +35,11 @@ class ScrapaWebsite {
 	            }
 
 	            $catPageLastArticle = $doc->find($selectors['catPageLastArticle']);
+
+	            if (!$catPageLastArticle) {
+		            throw new Exception("Category page last article not found.");
+		        }
+
 	            $articleUrl = $config['directUrl'] ?? $catPageLastArticle->find('a')->attr('href');
 
 	            // Validate URL
@@ -56,28 +61,48 @@ class ScrapaWebsite {
 	        	$articleUrl = $pageUrl;
 	        }
 
+	         my_second_log('INFO', 'Getting article: ' . $articleUrl);
+
             // Load the ARTICLE page
             $articleDoc = hQuery::fromUrl($articleUrl, ['Accept' => 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8']);
             if (!$articleDoc) {
                 throw new Exception("Failed to load article content from URL: $articleUrl");
             }
-
+    
+    
             //check if is NEWS
-            $newsLabel = $articleDoc->find($selectors['newsLabelSel'])->text();
-            if (strpos($newsLabel, $selectors['newsLabelText']) === false) {
-                throw new Exception("The article is not categorized as 'News'.");
+			if($selectors['newsLabelSel'] && $selectors['newsLabelText']) {
+				if($articleDoc->find($selectors['newsLabelSel']) == null) {
+					throw new Exception("The article is not categorized as 'News'.");
+				}
+				$newsLabel = $articleDoc->find($selectors['newsLabelSel'])->text();
+				if (strpos($newsLabel, $selectors['newsLabelText']) === false) {
+					throw new Exception("The article is not categorized as 'News'.");
+				}
+			}
+
+            if($articleDoc->find($selectors['title'])) {
+            	$title = $articleDoc->find($selectors['title'])->text();
+            }
+            else {
+            	throw new Exception("Error with title of scraped article.");
             }
 
-            // Extracting elements based on selectors
-            $title = $articleDoc->find($selectors['title'])->text();
-            $content = $articleDoc->find($selectors['content'])->html();
+            if($articleDoc->find($selectors['content'])) {
+	            $content = $articleDoc->find($selectors['content'])->html();
+            }
+            else {
+            	throw new Exception("Error with content of scraped article.");
+            }
 
             //featured image
-            $imageUrl = $articleDoc->find($selectors['imageUrl'])->attr('content');
-            if (!isValidUrl($imageUrl)) {
-			    // If not valid, try getting the URL from 'src' attribute
-			    $imageUrl = $articleDoc->find($selectors['imageUrl'])->attr('src');
-			}
+            if($articleDoc->find($selectors['imageUrl'])) {
+	            $imageUrl = $articleDoc->find($selectors['imageUrl'])->attr('content');
+	            if (!isValidUrl($imageUrl)) {
+				    // If not valid, try getting the URL from 'src' attribute
+				    $imageUrl = $articleDoc->find($selectors['imageUrl'])->attr('src');
+				}
+            }
 
             $imageCredit = $config['defaultImageCredit'] ?? "";
 
@@ -97,7 +122,7 @@ class ScrapaWebsite {
 
         } catch (Exception $e) {
             if ($e->getMessage() == "The article is not categorized as 'News'.") {
-                my_second_log("INFO", "Skipped non-news article at " . $articleUrl);
+                my_second_log("INFO", "Skipped, not article type text: " . $articleUrl);
                 return null;
             } else {
                 my_second_log("ERROR", "Error in scrapeWebsite: " . $e->getMessage());
@@ -142,8 +167,8 @@ class ScrapaWebsite {
 	    $cleanDom = new DOMDocument();
 
 	    // Update the query to include h2, h3, h4, h5, and h6 tags
-	    $nodes = $xpath->query('//text()[not(parent::script) and normalize-space()] | //img | //h2 | //h3 | //h4 | //h5 | //h6 | //ul | //ol | //figure');
-
+	    $nodes = $xpath->query('//text()[not(parent::script) and normalize-space()] | //img | //h2 | //h3 | //h4 | //h5 | //h6 | //ul | //ol');
+	    
 
 	    $firstImage = true;
 	    $textEncountered = false;
@@ -158,7 +183,9 @@ class ScrapaWebsite {
 	                $firstImage = false;
 	                continue;
 	            }
+
 	            $cleanDom->appendChild($cleanDom->importNode($node, true));
+
 	            if ($node->tagName === 'img') {
 	                $firstImage = false;
 	            }
@@ -167,7 +194,6 @@ class ScrapaWebsite {
 
 	    $cleaned_content = $cleanDom->saveHTML();
 	    libxml_use_internal_errors(false);
-
 	    // Output the cleaned content
 	    return $cleaned_content;
 	}
@@ -179,6 +205,7 @@ class ScrapaWebsite {
 	    libxml_use_internal_errors(true);
 	    $dom->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 	    libxml_clear_errors();
+
 
 	    $images = $dom->getElementsByTagName('img');
 
@@ -198,7 +225,7 @@ class ScrapaWebsite {
 	            $attrValue = $attribute->value;
 
 	            // Check if the attribute value contains a valid URL with jpg, jpeg, or png extension
-	            if (preg_match('/\.(jpg|jpeg|png)(\?|&|$)/i', $attrValue)) {
+	            if (preg_match('/\.(jpg|jpeg|png|webp)(\?|&|$)/i', $attrValue)) {
 	                $imageSrc = $attrValue;
 	                break; // Break the loop if a valid URL is found
 	            }
