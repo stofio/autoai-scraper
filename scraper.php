@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name: AI Auto Rewrite
+ * Plugin Name: AI-powered Content Creation with RSS and Scraping
  * Plugin URI: #
- * Description: This plugin scrapes from selected URLs/sources, rewrites the article with AI and creates new post
+ * Description: This plugin scrapes from selected URLs/sources, rewrites the articles with AI and creates new posts
  * Version: 1.0.0
- * Author: Anonymous
+ * Author: Dejan Manasijevski
  * License: GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
@@ -20,14 +20,19 @@ add_action('admin_init', 'save_source_form');
 //add_action('wp_ajax_run_scraper_from_url', 'ajax_run_scraper_from_url');
 
 //
-//settings page
+//settings page 
 //
 add_action('admin_init', 'save_open_ai_key');
 add_action('admin_init', 'save_output_language');
 add_action('admin_init', 'save_ai_settings');
+add_action('admin_init', 'save_cron_job_settings');
 
 // Hook the function to add the button to the admin bar
 add_action('wp', 'run_rewrite_post');
+
+
+// Add an action hook to handle the cron job
+add_action('autoai_cron_hook', 'run_auto_post_single_cron_job');
 
 
 function news_scraper_scripts() {
@@ -121,7 +126,7 @@ function autoai_settings_page() {
 
 function save_source_form() {
     require_once plugin_dir_path(__FILE__) . '/admin/includes/handle_actions.php';
-    ai_scraper_handle_form_submission(); 
+    save_source(); 
 }
 
 
@@ -174,6 +179,15 @@ function save_ai_settings() {
     }
 }
 
+
+function save_cron_job_settings() {
+    if (isset($_POST['action']) && $_POST['action'] == 'save_cron_job_settings') {
+        $times_a_day_run_cron = isset($_POST['times_a_day_run_cron']) ? $_POST['times_a_day_run_cron'] : '';
+        update_option('times_a_day_run_cron', $times_a_day_run_cron);
+    }
+}
+
+
 function run_rewrite_post() {
     if (is_single() && is_user_logged_in()) {
         require_once plugin_dir_path(__FILE__) . '/admin/includes/rewrite_post.php';
@@ -181,17 +195,17 @@ function run_rewrite_post() {
 }
 
 
-
-// Add an action hook to handle the cron job
-add_action('autoai_cron_hook', 'run_auto_post_single_cron_job');
-
 // Callback function to process each URL in the cron job
 function run_auto_post_single_cron_job($indexInSourceArray) {
     require_once plugin_dir_path(__FILE__) . 'scrape-and-post.php';
-    my_log('CRON JOB N: ');
-    my_log($indexInSourceArray);
-
     $sources = get_option('ai_scraper_websites', '');
+
+    my_log('CRON JOB N: ');
+    my_log($sources[$indexInSourceArray]);
+
+    run_single_auto_post($sources[$indexInSourceArray]);
+    my_second_log('INFO', 'Cron job run for: ' . $sources[$indexInSourceArray]['baseUrl']);
+
 
     $runTimeAndSourceUrl = array(
         'last_run_time' => time(), 

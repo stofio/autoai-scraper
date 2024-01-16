@@ -23,7 +23,7 @@ add_action('wp_ajax_rewrite_the_post', 'rewrite_the_post_callback');
 
 
 //function used in main plugin file
-function ai_scraper_handle_form_submission() {    
+function save_source() {    
     if(isset($_POST['action'])) :
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && $_POST['action'] == 'add_website') {
 
@@ -37,7 +37,7 @@ function ai_scraper_handle_form_submission() {
 
         $website_config = [
             'baseUrl' => sanitize_text_field($_POST['baseUrl']),
-            'categoryId' => sanitize_text_field($_POST['categoryId']),
+            'categoryId' => $_POST['categoryId'],
             'catPageLastArticle' => sanitize_text_field($_POST['catPageLastArticle']),
             'title' => sanitize_text_field($_POST['title']),
             'content' => sanitize_text_field($_POST['content']),
@@ -45,7 +45,9 @@ function ai_scraper_handle_form_submission() {
             'newsLabelSel' => sanitize_text_field($_POST['newsLabelSel']),
             'newsLabelText' => sanitize_text_field($_POST['newsLabelText']),
             'defaultImageCredit' => sanitize_text_field($_POST['defaultImageCredit']),
-            'runDaily' => isset($_POST['runDaily']) ? $_POST['runDaily'] : ''
+            'runDaily' => isset($_POST['runDaily']) ? $_POST['runDaily'] : '',
+            'pTagsNumber' => $_POST['pTagsNumber'],
+            'promptToAppend' => sanitize_text_field($_POST['promptToAppend'])
         ];
 
         if (isset($_POST['current_website_id']) && $_POST['current_website_id'] != '') {
@@ -166,7 +168,6 @@ function run_post_from_url() {
 
         require_once plugin_dir_path(__FILE__) . '../../scrape-and-post.php';
     
-        //get source
         $url = $_POST['url'];
 
         //get source

@@ -22,10 +22,11 @@ function addToPublishedList($url) {
     // Encode the array back into JSON
     $jsonData = json_encode($data, JSON_PRETTY_PRINT);
 
-    checkJsonSizeAndShorten();
-
     // Write the JSON data back to the file
     file_put_contents($filePath, $jsonData);
+
+    checkScrapedUelsJsonSizeAndShorten();
+    checkLogsFolderSizeAndShorten();
 }
 
 
@@ -57,8 +58,9 @@ function isUrlInPublishedList($title) {
 }
 
 
-function checkJsonSizeAndShorten() {
+function checkScrapedUelsJsonSizeAndShorten() {
     $filePath = dirname(plugin_dir_path(__FILE__)) . '/scraped_urls.json';
+
 
     if (file_exists($filePath)) {
         $jsonData = file_get_contents($filePath);
@@ -71,17 +73,44 @@ function checkJsonSizeAndShorten() {
         }
 
         // Check if there are more than 130 URLs
-        if (count($data) > 130) {
+        if (count($data) > 250) {
             // Keep only the most recent 100 URLs
-            $data = array_slice($data, -100);
+            $newdata = array_slice($data, -100);
+
+            my_log($newdata);
 
             // Encode the array back into JSON
-            $jsonData = json_encode($data, JSON_PRETTY_PRINT);
-            file_put_contents($filePath, $jsonData);
+            $newJsonData = json_encode($newdata, JSON_PRETTY_PRINT);
+            file_put_contents($filePath, $newJsonData);
         }
     }
 }
 
+
+function checkLogsFolderSizeAndShorten() {
+    $logFolder = dirname(plugin_dir_path(__FILE__)) . '/logs';
+    $maxFiles = 30;
+    $filesToDelete = 15;
+
+    // Get all files in the logs folder
+    $files = glob($logFolder . '/*');
+
+    // Check the number of files
+    $fileCount = count($files);
+
+    // If the number of files exceeds the maximum, delete the specified number of oldest files
+    if ($fileCount > $maxFiles) {
+        // Sort the files by modification time (oldest first)
+        usort($files, function($a, $b) {
+            return filemtime($a) - filemtime($b);
+        });
+
+        // Delete the specified number of oldest files
+        for ($i = 0; $i < $filesToDelete; $i++) {
+            unlink($files[$i]);
+        }
+    }
+}
 
 
 
@@ -102,6 +131,8 @@ function my_second_log($level, $message) {
    file_put_contents($logFile, $logMessage, FILE_APPEND);
 }
 
+
+
 function isValidUrl($url) {
     return filter_var($url, FILTER_VALIDATE_URL) !== false;
 }
@@ -120,3 +151,5 @@ function getBaseUrl($url) {
 
     return $host_without_www;
 }
+
+

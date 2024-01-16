@@ -18,7 +18,8 @@ $sources = get_option('ai_scraper_websites', '');
 
     </div>
 
-    <div class="test-results"></div>
+    <ol class="test-results">
+    </ol>
 </div>
 
 
@@ -42,14 +43,14 @@ $sources = get_option('ai_scraper_websites', '');
                 success: function(postedArticleUrl) {
                     console.log(postedArticleUrl);
                     if(postedArticleUrl == 'errorNoConfiguration') {
-                        $('.test-results').append('<p><b>FAILED</b> - no configuration for website url saved</p>');
+                        $('.test-results').append('<li><p><b>FAILED</b> - no configuration for website url saved</p></li>');
                     }
 
                     else if(postedArticleUrl == null || postedArticleUrl == '') {
-                        $('.test-results').append('<p><b>FAILED</b> - check logs for info</p>');
+                        $('.test-results').append('<li><p><b>FAILED</b> - check logs for info</p></li>');
                     }
                     else {
-                        $('.test-results').append(`Article posted with url <a target="_blank" href="${postedArticleUrl}">${postedArticleUrl}</a><br>`);
+                        $('.test-results').append(`<li>Article posted with url <a target="_blank" href="${postedArticleUrl}">${postedArticleUrl}</a></li>`);
                     }
                     
                     $('#loadingTest').css('display', 'none');

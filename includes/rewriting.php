@@ -4,7 +4,7 @@ define('API_KEY', get_option('open_ai_key_option'));
 define('API_ENDPOINT', 'https://api.openai.com/v1/chat/completions');
 
 
-function generateContentWithAI($article) {
+function generateContentWithAI($article, $source) {
     $titleAndExcerpt = getAiTitleAndExcerpt($article);
 
     // Check if title and excerpt were successfully generated
@@ -12,8 +12,7 @@ function generateContentWithAI($article) {
         return 'error'; // Propagate the error
     }
 
-
-    $content = rewriteContent($article['content'], $article['title']);
+    $content = rewriteScrapedContent($article['content'], $article['title'], $source);
 
     // Check if content was successfully generated
     if ($content === 'error') {
@@ -30,9 +29,14 @@ function generateContentWithAI($article) {
     ];
 }
 
-
 function sendToOpenAI($prompt) {
     try {
+
+        $model = get_option('autoai_output_language');
+        if($model === null || $model === '' || !$model) {
+            $model = 'gpt-3.5-turbo';
+        }
+
         $ch = curl_init(API_ENDPOINT);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -42,7 +46,7 @@ function sendToOpenAI($prompt) {
                 'Authorization: Bearer ' . API_KEY
             ],
             CURLOPT_POSTFIELDS => json_encode([
-                'model' => get_option('open_ai_model'),
+                'model' => $model,
                 'messages' => [['role' => 'user', 'content' => $prompt]]
             ])
         ]);
@@ -67,6 +71,10 @@ function getAiTitleAndExcerpt($contentAndTitle) {
         }
 
         $lang = get_option('autoai_output_language');
+        if($lang === null || $lang === '' || !$lang) {
+            $lang = 'English';
+        }
+
 
         $prompt = <<<EOD
             Im giving you next a news article in the PC niche. 
@@ -83,9 +91,9 @@ function getAiTitleAndExcerpt($contentAndTitle) {
             }
         EOD;
 
-
-
+    
         $responseArray = sendToOpenAI($prompt);
+
 
         if (json_last_error() !== JSON_ERROR_NONE ||
             !isset($responseArray['choices'][0]['message']['content'])) {
@@ -100,7 +108,7 @@ function getAiTitleAndExcerpt($contentAndTitle) {
     }
 }
 
-function rewriteContent($content, $title) {
+function rrewriteScrapedContent($content, $title, $source) {
     $dom = new DOMDocument();
     libxml_use_internal_errors(true);
     $dom->loadHTML(mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8'));
@@ -119,7 +127,13 @@ function rewriteContent($content, $title) {
             $paragraphText = $node->textContent;
             $wordCount = str_word_count($paragraphText);
 
-            if ($currentWordCount + $wordCount > get_option('word_count_per_open_ai_request', '')) {
+            $selectedWordCountPerRequest = get_option('autoai_output_language');
+            if($selectedWordCountPerRequest === null || $selectedWordCountPerRequest === '' || !$selectedWordCountPerRequest) {
+                $selectedWordCountPerRequest = 400;
+            }
+
+
+            if ($currentWordCount + $wordCount > $selectedWordCountPerRequest) {
                 // Check if last node was a heading
                 if ($lastNode && in_array($lastNode->nodeName, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img'])) {
                     $detachedHeading = $lastNode->parentNode->removeChild($lastNode);
@@ -174,38 +188,131 @@ function rewriteContent($content, $title) {
 
 
 
-function getAIPieceOfArticle($contentPart, $title) {
+
+function rewriteScrapedContent($content, $title, $source) {
+    $dom = new DOMDocument();
+    libxml_use_internal_errors(true);
+    $dom->loadHTML(mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8'));
+    libxml_clear_errors();
+
+
+    $body = $dom->getElementsByTagName('body')->item(0);
+    $contentGroup = '';
+    $paragraphCount = 0;
+    $paragraphsPerRequest = isset($source['pTagsNumber']) ? $source['pTagsNumber'] : 5;
+    $rewrittenContent = '';
+    $potentialHeading = '';
+
+    foreach ($body->childNodes as $node) {
+        if ($node->nodeName === 'p') {
+            $paragraphCount++;
+
+            // Add potential heading (if any) to the current group
+            if (!empty($potentialHeading)) {
+                $contentGroup .= $potentialHeading;
+                $potentialHeading = '';
+            }
+
+            // Add the current paragraph to the group
+            $contentGroup .= $dom->saveHTML($node);
+
+            if ($paragraphCount >= $paragraphsPerRequest) {
+
+                $rewrittenPartWithImages = processAndRewriteContent($contentGroup, $title, $source);
+
+                $rewrittenContent .= $rewrittenPartWithImages;
+
+                // Reset for the next group
+                $contentGroup = '';
+                $paragraphCount = 0;
+            }
+        } else if (in_array($node->nodeName, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])) {
+            // Handle headings and images
+            if ($paragraphCount == 0) {
+                // If no paragraphs are in the current group, add headings/images directly
+                $contentGroup .= $dom->saveHTML($node);
+            } else {
+                // Store the heading for the next group
+                $potentialHeading = $dom->saveHTML($node);
+            }
+        } else {
+            // Handle other types of nodes if needed
+        }
+    }
+
+
+
+
+    // Process the last group if it exists
+    if (!empty($contentGroup)) {
+        $rewrittenPartWithImages = processAndRewriteContent($contentGroup, $title, $source);
+        $rewrittenContent .= $rewrittenPartWithImages;
+    }
+
+    return $rewrittenContent;
+}
+
+
+
+function processAndRewriteContent($contentGroup, $title, $sourceSettings) {
+    // Calculate image positions before AI rewriting
+
+
+    $imagePositions = calculateImagePositionsByTags($contentGroup);
+    $rewrittenPart = getAIPieceOfArticle($contentGroup, $title, $sourceSettings);
+
+    $rewrittenPartWithImages = reinsertImagesByTagCount($rewrittenPart, $imagePositions);
+
+    return $rewrittenPartWithImages;
+}
+
+
+
+
+
+function getAIPieceOfArticle($contentPart, $title, $sourceSettings) {
     try {
         if (empty($contentPart)) {
             return;
         }
 
         $lang = get_option('autoai_output_language');
+        if($lang === null || $lang === '' || !$lang) {
+            $lang = 'English';
+        }
+
+        $userPrompt = $sourceSettings['promptToAppend'];
+
+        // Check if $contentPart is not empty
+        if (!empty($contentPart)) {
+            $instructions = "Writing Instructions: \n    {$userPrompt}\n";
+        } else {
+            $instructions = "";
+        }
 
         $originalPrompt = <<<EOD
-        Rewrite in {$lang} the provided article excerpt, preserving its original meaning, structure, and HTML formatting. 
-        Expand the content's depth while omitting unrelated details. 
-        Exclude references to videos, credits, unrelated sections and unrelated text that is not part of the article context. The goal is a longer, enriched version of the text, focused solely on the article's content. Remove any parts that are not part of the story of the article, like related links, readings, recommendations...
+            Rewrite the provided content in {$lang} to create a unique version that maintains the original's informational essence but differs significantly in wording and structure. Focus on paraphrasing and restructuring sentences while retaining the informational value and context. Avoid direct quotations or closely similar phrasing from the original text.
+            The title of the article is '{$title}'.
 
-        Here is the article excerpt to rewrite:
-        "content": "{$contentPart}"
+            {$instructions}
 
-        Some of the "content" (or all of the given) is out of context from the article '{$title}', exclude that part.
-        Remember to exclude videos related text, credits, and unrelated sections like 'releated readings', 'editor recommendations' sections with its content, ecc.
-        The output should be a detailed, HTML-formatted text in {$lang} language that mirrors the original's key points of the entire article, with longer pharagraphs.
+            Article Excerpt to Rewrite:
+            "content": "{$contentPart}"
+
+            The rewritten content should be presented in HTML tags in {$lang}, excluding unnecessary HTML structure tags, reflecting a thorough rephrasing and reorganization to ensure it is distinctly different from the original while conveying the same key points and instructions, without additional context.
+            Return only the rewritten content. Bold text and use list if needed for clearer content.
         EOD;
 
 
         $savedPrompt = get_option('prompt_partial_text', '');
 
-        if($savedPrompt === '') {
+        if($savedPrompt === '' || $savedPrompt === null) {
             $prompt = $originalPrompt;
         }
         else {
             $swapped = str_replace(['{$lang}', '{$contentPart}', '{$title}'], [$lang, $contentPart, $title], $savedPrompt);
             $prompt = stripslashes($swapped);
         }
-
 
         $responseArray = sendToOpenAI($prompt);
 
@@ -224,6 +331,70 @@ function getAIPieceOfArticle($contentPart, $title) {
 
 
 function calculateImagePositionsByTags($currentPart) {
+    $dom = new DOMDocument();
+    @$dom->loadHTML(mb_convert_encoding($currentPart, 'HTML-ENTITIES', 'UTF-8'));
+
+    $imagePositions = [];
+    $paragraphIndex = 0;
+    $elementIndex = 0;
+
+    foreach ($dom->getElementsByTagName('body')->item(0)->childNodes as $child) {
+        if ($child->nodeName === 'p') {
+            $elementIndex = 0; // Reset element index for each new paragraph
+            foreach ($child->childNodes as $p_child) {
+                if ($p_child->nodeName === 'img') {
+                    // Image inside a paragraph
+                    $imagePositions[] = [
+                        'paragraphIndex' => $paragraphIndex,
+                        'elementIndex' => $elementIndex,
+                        'tag' => $dom->saveHTML($p_child)
+                    ];
+                }
+                $elementIndex++;
+            }
+            $paragraphIndex++;
+        } elseif ($child->nodeName === 'img') {
+            // Image outside a paragraph
+            $imagePositions[] = [
+                'paragraphIndex' => $paragraphIndex,
+                'elementIndex' => -1, // Indicates that the image is outside a paragraph
+                'tag' => $dom->saveHTML($child)
+            ];
+        }
+    }
+
+    return $imagePositions;
+}
+
+
+function reinsertImagesByTagCount($rewrittenPart, $imagePositions) {
+
+    $dom = new DOMDocument();
+    @$dom->loadHTML(mb_convert_encoding($rewrittenPart, 'HTML-ENTITIES', 'UTF-8'));
+
+    $paragraphs = $dom->getElementsByTagName('p');
+
+    foreach ($imagePositions as $image) {
+        $imgDom = new DOMDocument();
+        @$imgDom->loadHTML($image['tag']);
+        $importedNode = $dom->importNode($imgDom->documentElement, true);
+
+        if ($image['paragraphIndex'] < $paragraphs->length) {
+            $paragraph = $paragraphs->item($image['paragraphIndex']);
+            $paragraph->parentNode->insertBefore($importedNode, $paragraph->nextSibling);
+        } else {
+            $dom->documentElement->appendChild($importedNode);
+        }
+    }
+
+    return $dom->saveHTML($dom->documentElement);
+}
+
+
+
+
+
+function ccalculateImagePositionsByTags($currentPart) {
     if ($currentPart == '') {
         return [];
     }
@@ -258,10 +429,7 @@ function calculateImagePositionsByTags($currentPart) {
     return $imagePositions;
 }
 
-
-
-
-function reinsertImagesByTagCount($rewrittenPart, $imagePositions) {
+function rreinsertImagesByTagCount($rewrittenPart, $imagePositions) {
     if ($rewrittenPart == '') {
         return $rewrittenPart;
     }
@@ -298,9 +466,6 @@ function reinsertImagesByTagCount($rewrittenPart, $imagePositions) {
 }
 
 
-
-
-
 function getAiContent($contentAndTitle) {
     try {
         if (!isset($contentAndTitle['title'], $contentAndTitle['content'])) {
@@ -335,10 +500,6 @@ function getAiContent($contentAndTitle) {
 
             Your goal is to return a comprehensively rewritten version of the main content in HTML format. This version should be as extensive as or more detailed than the original, without any additional comments or explanations.
         EOD;
-
-
-
-
 
         $responseArray = sendToOpenAI($prompt);
 

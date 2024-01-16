@@ -1,42 +1,44 @@
 <?php
 
-function test_website_scrape($websiteArray, $url = null) {
+function getScrapedData($sourceConfiguration, $url = null) {
+    
     $scraper = new ScrapaWebsite();
 
+    //preapare args for scraping
     $websiteConfig = [
-        'baseUrl' => $websiteArray['baseUrl'],
+        'baseUrl' => $sourceConfiguration['baseUrl'],
         'selectors' => [
-            'catPageLastArticle' => stripslashes($websiteArray['catPageLastArticle']),
-            'title' => stripslashes($websiteArray['title']),
-            'content' => stripslashes($websiteArray['content']),
-            'imageUrl' => stripslashes(stripslashes($websiteArray['imageUrl'])),
-            'newsLabelSel' => stripslashes($websiteArray['newsLabelSel']),
-            'newsLabelText' => stripslashes($websiteArray['newsLabelText'])
+            'catPageLastArticle' => stripslashes($sourceConfiguration['catPageLastArticle']),
+            'title' => stripslashes($sourceConfiguration['title']),
+            'content' => stripslashes($sourceConfiguration['content']),
+            'imageUrl' => stripslashes(stripslashes($sourceConfiguration['imageUrl'])),
+            'newsLabelSel' => stripslashes($sourceConfiguration['newsLabelSel']),
+            'newsLabelText' => stripslashes($sourceConfiguration['newsLabelText'])
         ],
-        'defaultImageCredit' => stripslashes($websiteArray['newsLabelText'])
+        'defaultImageCredit' => stripslashes($sourceConfiguration['newsLabelText'])
     ];
 
     $scrapedData = $scraper->scrapeWebsite($websiteConfig, $url);
     return $scrapedData;
 }
 
-
-
-
 //return
 function run_single_auto_post($singleSource, $url = null) {
         my_second_log('INFO', 'START WITH SOURCE: ' . $singleSource['baseUrl']);
- 
-        $categoryIDToPost = $singleSource['categoryId'];
         
-        $scrapedData = test_website_scrape($singleSource, $url); //return scraped data
-
+        $scrapedData = getScrapedData($singleSource, $url); //return scraped data
 
         if($scrapedData == null) {
             return null;
         }
         else {
-            $AIGeneratedData = checkScrapedDataGenerateAiAndPost($scrapedData, $categoryIDToPost);
+
+            if($url) { //if its From Url
+                $AIGeneratedData = generateAiAndPost($scrapedData, $singleSource, true);
+            }
+            else {
+                $AIGeneratedData = generateAiAndPost($scrapedData, $singleSource);
+            }
 
             if($url != null) {
                 return $AIGeneratedData['post_url'];
@@ -45,20 +47,25 @@ function run_single_auto_post($singleSource, $url = null) {
                 return $AIGeneratedData;
             }
         }
-     
 }
 
-
-
-function checkScrapedDataGenerateAiAndPost($scrapedData, $categoryID) {
+function generateAiAndPost($scrapedData, $source, $isFromUrl = false) {
     if (is_array($scrapedData)) {
         $title = $scrapedData['title'];
         $url = $scrapedData['original-url'];
 
-        if (!isUrlInPublishedList($url)) {
+        if($isFromUrl) {
+            $published = false;
+        }
+        else {
+            $published = isUrlInPublishedList($url);
+        }
+
+
+        if (!$published) {
             my_second_log('INFO', 'Scraped data success');
 
-            $post_id = getAiAndPost($scrapedData, $categoryID); // return post ID
+            $post_id = getAiAndPost($scrapedData, $source); // return post ID
 
             if($post_id == 0) {
                 my_second_log('ERROR', 'An error occured during posting the article, try again.');
@@ -91,61 +98,23 @@ function checkScrapedDataGenerateAiAndPost($scrapedData, $categoryID) {
 }
 
 
-
-
-function run_scraper_from_url($url) {
-    $clsScraper = new ScrapaWebsite();
-
-    //get all sources
-    //remove everything except baseURL
-
-    //take the base url from the url given
-    //search in the baseURLs array if the base url is there
-    //if is there, get the data to scrape and scrape
-    //return POST URL
-
-    //else if its not in anyone
-    //return 'errorNoConfigurationForUrl'
-
-    //else 
-    //return null;
-
-    $digitaltrendsMobileConfig = [
-        'baseUrl' => 'https://www.digitaltrends.com/mobile-news/',
-        'selectors' => [
-            'catPageLastArticle' => '.b-mem__post--xl',
-            'title' => 'header#dt-post-title h1',
-            'content' => '#dt-post-content',
-            'imageUrl' => 'meta[property="og:image"]',
-            'newsLabelSel' => '.b-headline__top li a span',
-            'newsLabelText' => 'News'
-        ],
-        'defaultImageCredit' => 'Digital Trends'
-    ];
-
-    $article = $clsScraper->scrapeWebsite($digitaltrendsMobileConfig, $url);
-    $scrapedAndPosted = checkScrapedDataGenerateAiAndPost($article, 34);
-    my_log('LOOG');
-    my_log($scrapedAndPosted['post_url']);
-    my_log('LOOGggggg');
-    my_log($scrapedAndPosted);
-    return $scrapedAndPosted['post_url'];//maybe deprecateddeprecated mayb
-}
-
-
-
 //get AI article and post
-function getAiAndPost($scrapedArticle, $categoryID) {
+function getAiAndPost($scrapedArticle, $source) {
 
     //
     //get AI ARTICLE
     //
-    $aiGeneratedContent = generateContentWithAI($scrapedArticle);
+    $aiGeneratedContent = generateContentWithAI($scrapedArticle, $source);
 
 
     if (strlen($aiGeneratedContent['content']) < 500) {
         my_second_log('ERROR', 'Content generated by AI too low, post not created for title: ' . $scrapedArticle['title']);
         return;
+    }
+
+    //fix AI excerpt fail, take first words of content
+    if( $aiGeneratedContent['excerpt'] == null ) {
+        $aiGeneratedContent['excerpt'] = getSubstringBeforeFirstDot($aiGeneratedContent['content']);
     }
 
     // Check if content generation was successful
@@ -156,36 +125,39 @@ function getAiAndPost($scrapedArticle, $categoryID) {
 
     my_second_log('INFO', 'AI content created success');
 
-    my_log($aiGeneratedContent);
 
     //
     // Create a NEW POST with the AI-generated content
     //
-    return createNewPost($aiGeneratedContent, $categoryID); // Returns 'success' or 'error'//maybe deprecated
+
+
+    return createNewPost($aiGeneratedContent, $source['categoryId']); // Returns 'success' or 'error'//maybe deprecated
+}
+
+function getSubstringBeforeFirstDot($inputString) {
+    // Find the position of the first dot in the string
+    $firstDotPosition = strpos($inputString, '.');
+
+    // Check if a dot was found
+    if ($firstDotPosition !== false) {
+        // Extract the substring before the first dot
+        $substringBeforeDot = substr($inputString, 0, $firstDotPosition);
+
+        return $substringBeforeDot;
+    } else {
+        // If no dot is found, handle the situation accordingly
+        return "No dot found in the string.";
+    }
 }
 
 
-
-
-
-
-
-
-
-
-
-/**
- * 
- *  REWRITE
- * 
- */
-
+//REWRITE
 function getAiAndRePost($scrapedArticle, $post_id) {
 
     //
     //get AI ARTICLE
     //
-    $aiGeneratedContent = generateContentWithAI($scrapedArticle);
+    $aiGeneratedContent = generateContentWithAI($scrapedArticle, $source);
 
 
     if (strlen($aiGeneratedContent['content']) < 500) {
@@ -207,13 +179,11 @@ function getAiAndRePost($scrapedArticle, $post_id) {
     return recreatePost($aiGeneratedContent, $post_id); // Returns 'success' or 'error'//maybe deprecated
 }
 
-
-
 function rewritePostAndPost($source, $original_url, $post_id) {
     
     my_second_log('INFO', 'START REWRITING: ' . $original_url);
 
-    $scrapedData = test_website_scrape($source, $original_url); //return scraped data
+    $scrapedData = getScrapedData($source, $original_url); //return scraped data
 
 
     if($scrapedData == null) {

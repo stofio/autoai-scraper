@@ -112,4 +112,29 @@ The output should be a detailed, HTML-formatted text in {$lang} language that mi
         <input type="hidden" name="action" value="save_ai_settings" />
         <input type="submit" value="Save Setting">
     </form>
+
+
+    <h2>Scheduling settings</h2>
+    <form method="post" action="" style="margin-bottom:30px">
+        <?php
+            $times_a_day_run_cron = get_option('times_a_day_run_cron', '');
+        ?>
+
+        <label for="times_a_day_run_cron">Times a day per source to run automatic check</label><br>
+        <select name="times_a_day_run_cron">
+            <option value="1" <?php if($times_a_day_run_cron == '1') echo 'selected';  ?>>1</option>
+            <option value="3" <?php if($times_a_day_run_cron == '3') echo 'selected';  ?>>3</option>
+            <option value="5" <?php if($times_a_day_run_cron == '5') echo 'selected';  ?>>5</option>
+            <option value="10" <?php if($times_a_day_run_cron == '10') echo 'selected';  ?>>10</option>
+            <option value="20" <?php if($times_a_day_run_cron == '20') echo 'selected';  ?>>20</option>
+            <option value="30" <?php if($times_a_day_run_cron == '30') echo 'selected';  ?>>30</option>
+        </select><br><br>
+
+
+        <input type="hidden" name="action" value="save_cron_job_settings" />
+        <input type="submit" value="Save Setting">
+    </form>
+
+
+
 </div>

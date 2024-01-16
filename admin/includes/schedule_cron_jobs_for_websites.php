@@ -1,6 +1,5 @@
 <?php
 
-
 function schedule_cron_jobs_for_sources() {
     // first unschedule all existing cron jobs associated with 'custom_cron_hook'
     for ($index = 0; $index <= 100; $index++) {
@@ -8,9 +7,14 @@ function schedule_cron_jobs_for_sources() {
         wp_clear_scheduled_hook('autoai_cron_hook', array($index));
     }
 
-    $timeADay = 3;
+
+    $timeADay = get_option('times_a_day_run_cron');
+    if($timeADay === null || $timeADay === '' || !$timeADay) {
+        $timeADay = 1;
+    }
+
     // Calculate the interval between each cron job
-    $interval = 86400 / $timeADay; // 86400 seconds in a day, dividing by n for n times a day
+    $interval = intval(86400 / $timeADay); // 86400 seconds in a day, dividing by n for n times a day
     $secInBetween = 0;
 
     // Get sources

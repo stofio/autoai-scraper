@@ -37,7 +37,6 @@ function add_custom_js_to_footer() {
             }
         }
 
-
         function startRewriting(original_url, post_id) {
             var overlay = document.createElement("div");
             overlay.style.position = "fixed";

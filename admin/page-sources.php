@@ -68,7 +68,7 @@ $websites = get_option('ai_scraper_websites', '');
 
                 </div>
                 <label for="categoryId">Save new post to category: </label>
-                <select name="categoryId">
+                <select name="categoryId[]" multiple required>
                     <?php 
                         //get all post categories
                          $categories = get_categories( array(
@@ -76,13 +76,15 @@ $websites = get_option('ai_scraper_websites', '');
                             'order'   => 'ASC'
                         ) );
 
+
                          foreach ($categories as $key => $category) {
                             $cat_id = $category->term_id;
                             $cat_name = $category->name;
 
                             if($cat_id == 1) continue;
                             
-                            if(is_int($websiteIdToEditInJson) && $cat_id == $websites[$websiteIdToEditInJson]['categoryId']) {
+
+                            if( is_int($websiteIdToEditInJson) && in_array($cat_id, $websites[$websiteIdToEditInJson]['categoryId']) ) {
                                 echo "<option value='$cat_id' selected>$cat_name</option>";
                             }
                             else {
@@ -93,14 +95,30 @@ $websites = get_option('ai_scraper_websites', '');
                     ?>
                 </select>
 
-                <br><br><br><br><br>
-                <label>Run daily check
-                    <input type="checkbox" name="runDaily" <?php if(is_int($websiteIdToEditInJson) && $websites[$websiteIdToEditInJson]['runDaily'] === 'on') echo 'checked'; ?> />
-                </label>
+                <br><br>
+                <div class="white-container">
+                    <h3>Other sattings</h3>
+                    <label>Number of paragraphs (html p tags) to rewrite per request - best with range from 300-800 words in total per p-tags group</label>
+                    <input type="number" name="pTagsNumber" min="1" max="50" step="1" placeholder="from 1 to 50" 
+                    value="<?php if(is_int($websiteIdToEditInJson) && isset($websites[$websiteIdToEditInJson]['pTagsNumber'])) echo $websites[$websiteIdToEditInJson]['pTagsNumber']; ?>">
+
+                    <label>Prompt to append to each request (p tags group), give instructions on the rewritten Output like tone or style.</label>
+                    <textarea name="promptToAppend"><?php 
+                        if(is_int($websiteIdToEditInJson) && isset($websites[$websiteIdToEditInJson]['promptToAppend'])) {
+                            echo stripslashes(htmlspecialchars($websites[$websiteIdToEditInJson]['promptToAppend']));
+                        }
+                        ?></textarea>
+
+
+
+                    <br><br><br><br><br>
+                    <label>Run daily check
+                        <input type="checkbox" name="runDaily" <?php if(is_int($websiteIdToEditInJson) && $websites[$websiteIdToEditInJson]['runDaily'] === 'on') echo 'checked'; ?> />
+                    </label>
+                </div>
             </div>
             <div class="right-column">
                 
-
                 <div class="white-container">
 
                     <h3>Article page selectors</h3>                
@@ -127,7 +145,6 @@ $websites = get_option('ai_scraper_websites', '');
                     
                 </div>
                 
-
                 <label for="base_url">Default Image Credit: </label>
                 <input type="text" required name="defaultImageCredit" value="<?php if(is_int($websiteIdToEditInJson)) echo $websites[$websiteIdToEditInJson]['defaultImageCredit']; ?>">
             </div>

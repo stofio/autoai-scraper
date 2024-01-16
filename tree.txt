@@ -1,0 +1,38 @@
+Folder PATH listing
+Volume serial number is 32C2-FA0C
+C:.
+|   .gitattributes
+|   .gitignore.txt
+|   clsWebsites.php
+|   debug.log
+|   loading-gif.gif
+|   scrape-and-post.php
+|   scraped_urls.json
+|   scraper.php
+|   test.php
+|   tree.txt
+|   
++---admin
+|   |   page-auto-post.php
+|   |   page-from-url.php
+|   |   page-settings.php
+|   |   page-sources.php
+|   |   
+|   \---includes
+|           handle_actions.php
+|           rewrite_post.php
+|           schedule_cron_jobs_for_websites.php
+|           
++---css
+|       css.css
+|                   
++---includes
+|       content_processing.php
+|       scraping.php
+|       utilities.php
+|       wordpress_integration.php
+|       
++---js
+|       js.js
+|       
+\---logs

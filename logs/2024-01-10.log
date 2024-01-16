@@ -1,0 +1,58 @@
+[2024-01-10 00:30:11] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2024-01-10 00:30:12] [INFO] Getting article: https://www.digitaltrends.com/computing/microsoft-accessories-incase-partnership/
+[2024-01-10 00:30:13] [INFO] Scraped data success
+[2024-01-10 00:30:22] [INFO] AI content created success
+[2024-01-10 00:30:25] [INFO] SUCCESS POST posted with ID: 760
+[2024-01-10 00:30:26] [INFO] START WITH SOURCE: https://www.tomshardware.com/desktops
+[2024-01-10 00:30:27] [INFO] Getting article: https://www.tomshardware.com/desktops/gaming-pcs/asus-first-gaming-nuc-uses-intel-core-ultra-up-to-rtx-4070-in-a-25-liter-chassis
+[2024-01-10 00:30:29] [INFO] Scraped data success
+[2024-01-10 00:30:44] [INFO] AI content created success
+[2024-01-10 00:38:43] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2024-01-10 00:38:44] [INFO] Getting article: https://www.digitaltrends.com/computing/microsoft-accessories-incase-partnership/
+[2024-01-10 00:38:45] [INFO] Skipped, already scraped: https://www.digitaltrends.com/computing/microsoft-accessories-incase-partnership/
+[2024-01-10 00:38:45] [INFO] START WITH SOURCE: https://www.tomshardware.com/desktops
+[2024-01-10 00:38:47] [INFO] Getting article: https://www.tomshardware.com/desktops/gaming-pcs/asus-first-gaming-nuc-uses-intel-core-ultra-up-to-rtx-4070-in-a-25-liter-chassis
+[2024-01-10 00:38:48] [INFO] Scraped data success
+[2024-01-10 00:39:01] [INFO] AI content created success
+[2024-01-10 00:40:06] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2024-01-10 00:40:07] [INFO] Getting article: https://www.digitaltrends.com/computing/microsoft-accessories-incase-partnership/
+[2024-01-10 00:40:08] [INFO] Skipped, already scraped: https://www.digitaltrends.com/computing/microsoft-accessories-incase-partnership/
+[2024-01-10 00:40:09] [INFO] START WITH SOURCE: https://www.tomshardware.com/desktops
+[2024-01-10 00:40:10] [INFO] Getting article: https://www.tomshardware.com/desktops/gaming-pcs/asus-first-gaming-nuc-uses-intel-core-ultra-up-to-rtx-4070-in-a-25-liter-chassis
+[2024-01-10 00:40:11] [INFO] Scraped data success
+[2024-01-10 00:40:26] [INFO] AI content created success
+[2024-01-10 00:45:40] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2024-01-10 00:45:41] [INFO] Getting article: https://www.digitaltrends.com/computing/microsoft-accessories-incase-partnership/
+[2024-01-10 00:45:42] [INFO] Skipped, already scraped: https://www.digitaltrends.com/computing/microsoft-accessories-incase-partnership/
+[2024-01-10 00:45:42] [INFO] START WITH SOURCE: https://www.tomshardware.com/desktops
+[2024-01-10 00:45:44] [INFO] Getting article: https://www.tomshardware.com/desktops/gaming-pcs/asus-first-gaming-nuc-uses-intel-core-ultra-up-to-rtx-4070-in-a-25-liter-chassis
+[2024-01-10 00:45:46] [INFO] Scraped data success
+[2024-01-10 00:46:00] [INFO] AI content created success
+[2024-01-10 00:51:31] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2024-01-10 00:51:32] [INFO] Getting article: https://www.digitaltrends.com/computing/microsoft-accessories-incase-partnership/
+[2024-01-10 00:51:33] [INFO] Skipped, already scraped: https://www.digitaltrends.com/computing/microsoft-accessories-incase-partnership/
+[2024-01-10 00:51:34] [INFO] START WITH SOURCE: https://www.tomshardware.com/desktops
+[2024-01-10 00:51:35] [INFO] Getting article: https://www.tomshardware.com/desktops/gaming-pcs/asus-first-gaming-nuc-uses-intel-core-ultra-up-to-rtx-4070-in-a-25-liter-chassis
+[2024-01-10 00:51:37] [INFO] Scraped data success
+[2024-01-10 00:51:51] [INFO] AI content created success
+[2024-01-10 00:51:54] [INFO] SUCCESS POST posted with ID: 762
+[2024-01-10 00:57:59] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2024-01-10 00:58:00] [INFO] Getting article: https://www.digitaltrends.com/computing/microsoft-accessories-incase-partnership/
+[2024-01-10 00:58:02] [INFO] Scraped data success
+[2024-01-10 00:58:08] [INFO] AI content created success
+[2024-01-10 00:58:10] [INFO] SUCCESS POST posted with ID: 765
+[2024-01-10 00:58:11] [INFO] START WITH SOURCE: https://www.tomshardware.com/desktops
+[2024-01-10 00:58:13] [INFO] Getting article: https://www.tomshardware.com/desktops/gaming-pcs/asus-first-gaming-nuc-uses-intel-core-ultra-up-to-rtx-4070-in-a-25-liter-chassis
+[2024-01-10 00:58:14] [INFO] Scraped data success
+[2024-01-10 00:58:28] [INFO] AI content created success
+[2024-01-10 00:58:30] [INFO] SUCCESS POST posted with ID: 767
+[2024-01-10 01:02:26] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2024-01-10 01:02:27] [INFO] Getting article: https://www.digitaltrends.com/computing/microsoft-accessories-incase-partnership/
+[2024-01-10 01:02:29] [INFO] Scraped data success
+[2024-01-10 01:02:37] [INFO] AI content created success
+[2024-01-10 01:02:39] [INFO] SUCCESS POST posted with ID: 770
+[2024-01-10 01:02:40] [INFO] START WITH SOURCE: https://www.tomshardware.com/desktops
+[2024-01-10 01:02:41] [INFO] Getting article: https://www.tomshardware.com/desktops/gaming-pcs/asus-first-gaming-nuc-uses-intel-core-ultra-up-to-rtx-4070-in-a-25-liter-chassis
+[2024-01-10 01:02:42] [INFO] Scraped data success
+[2024-01-10 01:02:56] [INFO] AI content created success
+[2024-01-10 01:02:58] [INFO] SUCCESS POST posted with ID: 772

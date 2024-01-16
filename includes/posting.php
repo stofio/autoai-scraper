@@ -1,6 +1,6 @@
 <?php
 
-function createNewPost($article, $categoryID) {
+function createNewPost($article, $categoryIDs) {
     try {
         $content = trim($article['content']);
         if (empty($content)) {
@@ -9,8 +9,9 @@ function createNewPost($article, $categoryID) {
 
         $content = getAndDownloadImagesInNewContent($content);
 
-        $post_id = insertPost($article, $categoryID);
+        $post_id = insertPost($article, $categoryIDs);
         if (is_wp_error($post_id)) {
+            my_second_log('ERROR', 'Failed to attach insert post');
             throw new Exception('Failed to insert post: ' . $post_id->get_error_message());
         }
 
@@ -52,7 +53,9 @@ function recreatePost($article, $post_id) {
 
 
 
-function insertPost($article, $categoryID) {
+function insertPost($article, $categoryIDs) {
+    $categoryIDs = is_string($categoryIDs) ? array((int)$categoryIDs) : $categoryIDs;
+
     $post_data = array(
         'post_title'    => $article['title'],
         'post_excerpt'  => $article['excerpt'],
@@ -60,7 +63,7 @@ function insertPost($article, $categoryID) {
         'post_status'   => 'publish',
         'post_author'   => 1, // or another user ID
         'post_type'     => 'post',
-        'post_category' => array($categoryID)
+       'post_category' => $categoryIDs
     );
 
     $post_id = wp_insert_post($post_data);
