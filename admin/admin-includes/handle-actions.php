@@ -4,9 +4,7 @@ add_action('wp_ajax_test_current_site', 'get_single_website_test_handler');
 
 add_action('wp_ajax_delete_source', 'delete_source_handler');
 
-
 add_action('wp_ajax_run_auto_post', 'run_auto_post_handler'); //deprecated?
-
 
 add_action('wp_ajax_run_single_auto_post', 'run_single_auto_post_handler');
 
@@ -91,7 +89,7 @@ function get_single_website_test_handler() {
         $websiteConfiguration = $websites[$websiteId];
 
         //scrape
-        require_once plugin_dir_path(__FILE__) . '../../scrape-and-post.php';
+        require_once plugin_dir_path(__FILE__) . '../../includes/main.php';
         $scrapedData = test_website_scrape($websiteConfiguration);
 
         // Send the array back to JavaScript
@@ -135,7 +133,7 @@ function run_auto_post_handler() {
         $websites = get_option('ai_scraper_websites', '');
 
         //scrape
-        require_once plugin_dir_path(__FILE__) . '../../scrape-and-post.php';
+        require_once plugin_dir_path(__FILE__) . '../../includes/main.php';
 
         $scrapedData = run_auto_post_all($websites);
 
@@ -153,7 +151,7 @@ function run_single_auto_post_handler() {
         $source = $_POST['single_source'];
 
         //scrape
-        require_once plugin_dir_path(__FILE__) . '../../scrape-and-post.php';
+        require_once plugin_dir_path(__FILE__) . '../../includes/main.php';
 
         $scrapedData = run_single_auto_post($source);
         // Send the array back to JavaScript
@@ -166,7 +164,7 @@ function run_single_auto_post_handler() {
 
 function run_post_from_url() {
 
-        require_once plugin_dir_path(__FILE__) . '../../scrape-and-post.php';
+        require_once plugin_dir_path(__FILE__) . '../../includes/main.php';
     
         $url = $_POST['url'];
 
@@ -217,7 +215,6 @@ function getSourceConfigByUrl($url) {
 
 
 function autoai_display_today_log_shortcode() {
-    
     // Define the path to the log file
     $log_file_path = WP_PLUGIN_DIR . '/scraper/logs/' . date('Y-m-d') . '.log';
 
@@ -264,13 +261,12 @@ function rewrite_the_post_callback() {
     $original_url = $_POST['original_url'];
     $post_id = $_POST['post_id'];
 
-    require_once plugin_dir_path(__FILE__) . '../../scrape-and-post.php';
+    require_once plugin_dir_path(__FILE__) . '../../includes/main.php';
 
     $theSource = getSourceConfigByUrl($original_url);
 
     rewritePostAndPost($theSource, $original_url, $post_id);
     
-
     // Send a response back to the JavaScript
     wp_send_json_success('Rewriting completed successfully.');
     

@@ -1,0 +1,40 @@
+2024-03-10 16:26:20 123
+2024-03-11 00:01:39 CRON JOB N: 
+2024-03-11 00:01:39 Array
+(
+    [baseUrl] => https://www.digitaltrends.com/computing-news/
+    [categoryId] => Array
+        (
+            [0] => 3
+            [1] => 4
+        )
+
+    [catPageLastArticle] => .b-mem__post--xl
+    [title] => header#dt-post-title h1
+    [content] => #dt-post-content
+    [imageUrl] => meta[property=\"og:image\"]
+    [newsLabelSel] => .b-headline__top li a span
+    [newsLabelText] => News
+    [defaultImageCredit] => Digital Trends
+    [runDaily] => on
+)
+
+2024-03-11 00:03:40 CRON JOB N: 
+2024-03-11 00:03:40 Array
+(
+    [baseUrl] => https://www.tomshardware.com/desktops
+    [categoryId] => Array
+        (
+            [0] => 3
+        )
+
+    [catPageLastArticle] => .listingResults .listingResult
+    [title] => .news-article h1
+    [content] => #article-body
+    [imageUrl] => meta[property=\"og:image\"]
+    [newsLabelSel] => .byline-social .byline
+    [newsLabelText] => News
+    [defaultImageCredit] => Tom’s Hardware
+    [runDaily] => on
+)
+

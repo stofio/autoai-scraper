@@ -1,6 +1,6 @@
 <?php
 
-require_once plugin_dir_path(__FILE__) . '/includes/handle_actions.php';
+require_once plugin_dir_path(__FILE__) . '/admin-includes/handle-actions.php';
 
 //check if its posted website ID, then edit
 if(isset($_POST['selectedWebsite']) && $_POST['selectedWebsite'] == 'all') {
@@ -8,7 +8,6 @@ if(isset($_POST['selectedWebsite']) && $_POST['selectedWebsite'] == 'all') {
 }
 else {
     $websiteIdToEditInJson = isset($_POST['selectedWebsite']) ? intval($_POST['selectedWebsite']) : null;
-
 }
 //get websites
 $websites = get_option('ai_scraper_websites', '');

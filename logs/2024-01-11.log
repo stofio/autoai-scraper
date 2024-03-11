@@ -1,8 +1,0 @@
-[2024-01-11 00:45:16] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
-[2024-01-11 00:45:19] [INFO] Getting article: https://www.digitaltrends.com/computing/hyte-nexus-link-impressions/
-[2024-01-11 00:45:20] [INFO] Scraped data success
-[2024-01-11 00:45:42] [INFO] AI content created success
-[2024-01-11 00:45:48] [INFO] SUCCESS POST posted with ID: 778
-[2024-01-11 00:45:49] [INFO] START WITH SOURCE: https://www.tomshardware.com/desktops
-[2024-01-11 00:45:50] [INFO] Getting article: https://www.tomshardware.com/news/best-gaming-pc-deals
-[2024-01-11 00:45:52] [INFO] Skipped, not article type text: https://www.tomshardware.com/news/best-gaming-pc-deals

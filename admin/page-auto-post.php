@@ -1,5 +1,5 @@
 <?php
-require_once plugin_dir_path(__FILE__) . '/includes/handle_actions.php';
+require_once plugin_dir_path(__FILE__) . '/admin-includes/handle-actions.php';
 ?>
 
 <div class="page-container">

@@ -1,9 +1,6 @@
 <?php
 
-require_once plugin_dir_path(__FILE__) . '/includes/handle_actions.php';
-
-
-$sources = get_option('ai_scraper_websites', '');
+require_once plugin_dir_path(__FILE__) . '/admin-includes/handle-actions.php';
 
 ?>
 
@@ -25,7 +22,6 @@ $sources = get_option('ai_scraper_websites', '');
 
 <script type="text/javascript">
     jQuery(document).ready(function($) {
-
         $('#runFromUrlBtn').on('click', () => {
             articleUrl = $('#autoai_url_input').val();
 
@@ -63,7 +59,5 @@ $sources = get_option('ai_scraper_websites', '');
                 }
             });
         });
-
-
     });
 </script>

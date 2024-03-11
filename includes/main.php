@@ -1,7 +1,9 @@
 <?php
+require_once plugin_dir_path(__DIR__) . '/vendor/autoload.php';
+require_once plugin_dir_path(__DIR__) . '/includes/utilities.php';
 
 function getScrapedData($sourceConfiguration, $url = null) {
-    
+    require_once plugin_dir_path(__DIR__) . '/includes/classes/clsScrapeWebsite.php';
     $scraper = new ScrapaWebsite();
 
     //preapare args for scraping
@@ -34,10 +36,10 @@ function run_single_auto_post($singleSource, $url = null) {
         else {
 
             if($url) { //if its From Url
-                $AIGeneratedData = generateAiAndPost($scrapedData, $singleSource, true);
+                $AIGeneratedData = generateArticle($scrapedData, $singleSource, true);
             }
             else {
-                $AIGeneratedData = generateAiAndPost($scrapedData, $singleSource);
+                $AIGeneratedData = generateArticle($scrapedData, $singleSource);
             }
 
             if($url != null) {
@@ -49,10 +51,12 @@ function run_single_auto_post($singleSource, $url = null) {
         }
 }
 
-function generateAiAndPost($scrapedData, $source, $isFromUrl = false) {
+//check if post exist, generate ai and post
+function generateArticle($scrapedData, $source, $isFromUrl = false) {
     if (is_array($scrapedData)) {
         $title = $scrapedData['title'];
         $url = $scrapedData['original-url'];
+
 
         if($isFromUrl) {
             $published = false;
@@ -65,6 +69,9 @@ function generateAiAndPost($scrapedData, $source, $isFromUrl = false) {
         if (!$published) {
             my_second_log('INFO', 'Scraped data success');
 
+            //
+            // get AI and post
+            //
             $post_id = getAiAndPost($scrapedData, $source); // return post ID
 
             if($post_id == 0) {
@@ -97,14 +104,14 @@ function generateAiAndPost($scrapedData, $source, $isFromUrl = false) {
     }
 }
 
-
-//get AI article and post
+//get AI article and post, return post_id
 function getAiAndPost($scrapedArticle, $source) {
-
     //
     //get AI ARTICLE
     //
-    $aiGeneratedContent = generateContentWithAI($scrapedArticle, $source);
+    require_once plugin_dir_path(__DIR__) . '/includes/classes/clsManageRewriting.php';
+    $rewritingManager = new clsManageRewriting();
+    $aiGeneratedContent = $rewritingManager->generateContentWithAI($scrapedArticle, $source); //assoc array
 
 
     if (strlen($aiGeneratedContent['content']) < 500) {
@@ -129,9 +136,9 @@ function getAiAndPost($scrapedArticle, $source) {
     //
     // Create a NEW POST with the AI-generated content
     //
-
-
-    return createNewPost($aiGeneratedContent, $source['categoryId']); // Returns 'success' or 'error'//maybe deprecated
+    require_once plugin_dir_path(__DIR__) . '/includes/classes/clsPosting.php';
+    $posting = new clsPosting();
+    return $posting->createNewPost($aiGeneratedContent, $source['categoryId']); // Returns 'success' or 'error'//maybe deprecated
 }
 
 function getSubstringBeforeFirstDot($inputString) {
@@ -149,7 +156,6 @@ function getSubstringBeforeFirstDot($inputString) {
         return "No dot found in the string.";
     }
 }
-
 
 //REWRITE
 function getAiAndRePost($scrapedArticle, $post_id) {
@@ -176,7 +182,7 @@ function getAiAndRePost($scrapedArticle, $post_id) {
     //
     // Create a NEW POST with the AI-generated content
     //
-    return recreatePost($aiGeneratedContent, $post_id); // Returns 'success' or 'error'//maybe deprecated
+    return recreatePost($aiGeneratedContent, $post_id); // Returns 'success' or 'error' //maybe deprecated
 }
 
 function rewritePostAndPost($source, $original_url, $post_id) {

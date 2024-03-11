@@ -9,15 +9,18 @@
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
-add_action('admin_enqueue_scripts', 'news_scraper_scripts');
+add_action('admin_enqueue_scripts', 'scrapeai_scripts');
 
-// Hook into the admin_menu action to add the new top-level menu and submenus
-add_action('admin_menu', 'ai_scraper_custom_menu');
+add_action('init', 'register_source_cpt'); //custom post type for Sources
+
+add_action('admin_menu', 'ai_scraper_custom_menu'); // Hook into the admin_menu action to add the new top-level menu and submenus
 
 add_action('admin_init', 'save_source_form');
 
 //add_action('wp_ajax_run_scraper', 'ajax_run_scraper');
 //add_action('wp_ajax_run_scraper_from_url', 'ajax_run_scraper_from_url');
+
+add_action('wp_ajax_scrapeai_handle_bulk_scrape_ajax', 'scrapeai_handle_bulk_scrape_ajax'); //start bulk scraping
 
 //
 //settings page 
@@ -35,20 +38,62 @@ add_action('wp', 'run_rewrite_post');
 add_action('autoai_cron_hook', 'run_auto_post_single_cron_job');
 
 
-function news_scraper_scripts() {
+function scrapeai_scripts() {
     if (is_admin()) {
         global $pagenow;
 
-       // Check if on your plugin's pages
-       $allowed_pages = array('ai-auto-post', 'autoai-from-url', 'autoai-sources', 'autoai-settings'); // Add your submenu pages here
-       if (in_array($pagenow, $allowed_pages) || (isset($_GET['page']) && in_array($_GET['page'], $allowed_pages))) {
-           wp_enqueue_script('jquery');
-            wp_enqueue_script('news-scraper-script', plugins_url('/js/js.js', __FILE__), array( 'jquery', 'wp-blocks', 'wp-element', 'wp-data' ));
-            wp_enqueue_style('news-scraper-scraper-style', plugins_url('/css/css.css', __FILE__));
+        $screen = get_current_screen();
 
-            wp_localize_script('news-scraper-script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
-        }        
+       // Check if on your plugin's pages
+       $allowed_pages = array('ai-auto-post', 'autoai-from-url', 'autoai-sources', 'autoai-settings', 'autoai-bulk'); // Add your submenu pages here
+       if (in_array($pagenow, $allowed_pages) || (isset($_GET['page']) && in_array($_GET['page'], $allowed_pages)) || $screen->post_type === 'sources_cpt') {
+            wp_enqueue_script('jquery');
+            wp_enqueue_script('ai-rewriter-script', plugins_url('/js/js.js', __FILE__), array( 
+                'jquery', 'wp-blocks', 'wp-element', 'wp-data' 
+            ));
+            wp_localize_script('ai-rewriter-script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+
+            wp_enqueue_style('ai-rewriter-style', plugins_url('/css/css.css', __FILE__));
+
+        }
+        
+        if(isset($_GET['page']) && $_GET['page'] == 'autoai-bulk') {
+            wp_enqueue_script('scrapeai-bulk-scrape', plugin_dir_url(__FILE__) . '/admin/js/page-bulk.js', array('jquery'), null, true);
+            wp_localize_script('scrapeai-bulk-scrape', 'scrapeaiBulkScrape', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('scrapeai_bulk_scrape_nonce'),
+            ));
+        }
     }
+}
+
+
+
+function register_source_cpt() {
+     $labels = array(
+        'name'               => _x('Sources', 'post type general name'),
+        'singular_name'      => _x('Source', 'post type singular name'),
+        'add_new'            => _x('Add Source', 'source'),
+        'add_new_item'       => __('Add New Source'),
+        'edit_item'          => __('Edit Source'),
+        'new_item'           => __('New Source'),
+        'all_items'          => __('All Sources'),
+        'view_item'          => __('View Source'),
+        'search_items'       => __('Search Sources'),
+        'not_found'          => __('No sources found'),
+        'not_found_in_trash' => __('No sources found in Trash'),
+        'parent_item_colon'  => '',
+        'menu_name'          => 'Sources'
+    );
+
+    $args = array(
+        'labels' => $labels,
+        'public' => true,
+        'label'  => 'Sources',
+        'supports' => array('title')
+    );
+    register_post_type('sources_cpt', $args);
+    include_once plugin_dir_path(__FILE__) . 'includes/sources.php';
 }
 
 
@@ -103,6 +148,15 @@ function ai_scraper_custom_menu() {
         'autoai-settings',
         'autoai_settings_page'
     );
+
+    add_submenu_page(
+        'ai-auto-post',     // Parent slug
+        'Bulk',                  // Page title
+        'Bulk',                  // Menu title
+        'manage_options',           // Capability required
+        'autoai-bulk',             // Menu slug
+        'autoai_bulk_page' // Function to display the page
+    );
 }
 
 
@@ -114,7 +168,6 @@ function ai_auto_post_page() {
     require_once plugin_dir_path(__FILE__) . '/admin/page-auto-post.php';
 }
 
-
 function autoai_from_url_page() {
     require_once plugin_dir_path(__FILE__) . '/admin/page-from-url.php';
 }
@@ -123,22 +176,23 @@ function autoai_settings_page() {
     require_once plugin_dir_path(__FILE__) . '/admin/page-settings.php';
 }
 
+function autoai_bulk_page() {
+    require_once plugin_dir_path(__FILE__) . '/admin/page-bulk.php';
+}
 
 function save_source_form() {
-    require_once plugin_dir_path(__FILE__) . '/admin/includes/handle_actions.php';
+    require_once plugin_dir_path(__FILE__) . '/admin/admin-includes/handle-actions.php';
     save_source(); 
 }
 
-
 function ajax_run_scraper() {
-    require_once plugin_dir_path(__FILE__) . 'scrape-and-post.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/main.php';
     run_scraper_and_post();
     wp_die();
 }
 
-
 function ajax_run_scraper_from_url() {
-    require_once plugin_dir_path(__FILE__) . 'scrape-and-post.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/main.php';
     $url = isset($_POST['url']) ? sanitize_text_field($_POST['url']) : '';
     if (!empty($url)) {
         $posted_url = run_scraper_from_url($url);
@@ -157,7 +211,6 @@ function save_open_ai_key() {
         update_option('open_ai_key_option', $api_key);
     }
 }
-
 
 function save_output_language() {
     if (isset($_POST['action']) && $_POST['action'] == 'save_output_language') {
@@ -190,14 +243,14 @@ function save_cron_job_settings() {
 
 function run_rewrite_post() {
     if (is_single() && is_user_logged_in()) {
-        require_once plugin_dir_path(__FILE__) . '/admin/includes/rewrite_post.php';
+        require_once plugin_dir_path(__FILE__) . '/admin/admin-includes/rewrite_post.php';
     }
 }
 
 
 // Callback function to process each URL in the cron job
 function run_auto_post_single_cron_job($indexInSourceArray) {
-    require_once plugin_dir_path(__FILE__) . 'scrape-and-post.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/main.php';
     $sources = get_option('ai_scraper_websites', '');
 
     my_log('CRON JOB N: ');
@@ -215,6 +268,25 @@ function run_auto_post_single_cron_job($indexInSourceArray) {
 }
 
 
+function scrapeai_handle_bulk_scrape_ajax() {
+    // Verify the nonce for security
+    check_ajax_referer('my_plugin_bulk_scrape_nonce', 'nonce');
+
+    // Extract and sanitize form data
+    $urls = isset($_POST['urls']) ? sanitize_textarea_field($_POST['urls']) : '';
+    $is_default_categories = isset($_POST['is_default_categories']) ? sanitize_text_field($_POST['is_default_categories']) : '';
+    $main_category = isset($_POST['main_category']) ? absint($_POST['main_category']) : 0; // Assuming this is an ID
+    $additional_categories = isset($_POST['additional_categories']) ? array_map('absint', $_POST['additional_categories']) : array();
+    $post_status = isset($_POST['post_status']) ? sanitize_text_field($_POST['post_status']) : 'draft';
+    $tags = isset($_POST['tags']) ? sanitize_text_field($_POST['tags']) : '';
+
+    require_once plugin_dir_path(__FILE__) . 'includes/main.php';
+    $url = isset($_POST['url']) ? sanitize_text_field($_POST['url']) : '';
+    if (!empty($url)) {
+        $posted_url = run_scraper_from_url($url);
+       echo $posted_url;
+    }
+}
 
 
 ?>

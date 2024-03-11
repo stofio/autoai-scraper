@@ -1,0 +1,8 @@
+[2024-02-23 09:21:43] [INFO] START WITH SOURCE: https://www.digitaltrends.com/computing-news/
+[2024-02-23 09:21:56] [ERROR] Error in scrapeWebsite: unable to create socket "tls://www.digitaltrends.com:443" A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+[2024-02-23 09:21:56] [ERROR] Invalid scraped data format: 
+[2024-02-23 09:21:56] [INFO] Cron job run for: https://www.digitaltrends.com/computing-news/
+[2024-02-23 09:21:56] [INFO] START WITH SOURCE: https://www.tomshardware.com/desktops
+[2024-02-23 09:22:24] [INFO] Getting article: https://www.tomshardware.com/news/best-gaming-pc-deals
+[2024-02-23 09:22:27] [INFO] Skipped, not article type text: https://www.tomshardware.com/news/best-gaming-pc-deals
+[2024-02-23 09:22:27] [INFO] Cron job run for: https://www.tomshardware.com/desktops
