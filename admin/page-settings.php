@@ -30,6 +30,7 @@
                         "German",
                         "Swahili",
                         "Marathi",
+                        "Serbian",
                         "Telugu",
                         "Turkish",
                         "Tamil",

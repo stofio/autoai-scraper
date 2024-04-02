@@ -2,6 +2,11 @@
 //this class prepares the scraped and cleaned content for rewriting
 //by splitting the content logically into chunks, and sending it to the AI rewriting class
 
+// Prevent direct access to this file
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
+
 require_once plugin_dir_path(__DIR__) . '/classes/clsAiRewriting.php';
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -17,9 +22,9 @@ class clsManageRewriting {
     }
 
     public function generateContentWithAI($scrapedArticle, $source) {
-        $contentInChunks = $this->divideScrapedContentByChunks($scrapedArticle['content']);
+        $contentInChunks = $this->divideScrapedContentByChunks($scrapedArticle['content'], $source['_content_fetcher_splitting_words']);
 
-        $titleAndExcerpt = $this->rewriter->getRewrittenTitleAndExcerpt(["content" => $contentInChunks[0], "title" => $scrapedArticle['title']], '');
+        $titleAndExcerpt = $this->rewriter->getRewrittenTitleAndExcerpt(["content" => $contentInChunks[0], "title" => $scrapedArticle['title']], $source['_content_fetcher_title_excerpt'][0]);
         if ($titleAndExcerpt === 'error') {
             return 'error';
         }
@@ -27,16 +32,16 @@ class clsManageRewriting {
         $rewrittenChunks = [];
         foreach ($contentInChunks as $chunk) {
             if (strpos($chunk, '<table') !== false) {
-                $rewrTable = $this->rewriter->rewriteTable($chunk, $titleAndExcerpt['title'], '');
+                $rewrTable = $this->rewriter->rewriteTable($chunk, $titleAndExcerpt['title'], $source['_content_fetcher_table'][0]);
                 array_push($rewrittenChunks, $rewrTable);
             } elseif (strpos($chunk, '<img') !== false) {
                 $imageString = $this->extractFirstImageTag($chunk);
                 $chunkWithPlaceholder = $this->addPlaceholderForImage($chunk);
-                $rewrWithPlaceholder = $this->rewriter->getRewrittenArticlePieceWithImage($chunkWithPlaceholder, $titleAndExcerpt['title'], '');
+                $rewrWithPlaceholder = $this->rewriter->getRewrittenArticlePieceWithImage($chunkWithPlaceholder, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article'][0]);
                 $rewrWithImage = $this->reinsertImageOnPlaceholder($rewrWithPlaceholder, $imageString);
                 array_push($rewrittenChunks, $rewrWithImage);
             } else {
-                $rewrWithoutImage = $this->rewriter->getRewrittenArticlePiece($chunk, $titleAndExcerpt['title'], '');
+                $rewrWithoutImage = $this->rewriter->getRewrittenArticlePiece($chunk, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article'][0]);
                 array_push($rewrittenChunks, $rewrWithoutImage);
             }
         }
@@ -74,11 +79,11 @@ class clsManageRewriting {
         return $result;
     }
 
-    private function divideScrapedContentByChunks($content) {
+    private function divideScrapedContentByChunks($content, $wordLimit) {
         $encodedContent = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
         $dom = new DOMDocument();
         @$dom->loadHTML($encodedContent);
-        $wordLimit = 220; // Set word limit
+        
         
         $chunks = $this->createChunks($dom, $wordLimit);
         $chunks2 = $this->extractTables($chunks);

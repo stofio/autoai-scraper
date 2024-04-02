@@ -2,6 +2,12 @@
 //this class scrapes the source web page by given settings
 //cleans the html elements
 
+// Prevent direct access to this file
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
+
+
 header('Content-Type: text/html; charset=utf-8');
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -20,12 +26,17 @@ class ScrapaWebsite {
             'title' => 'header#dt-post-title h1',
             'content' => '#dt-post-content',
             'imageUrl' => 'meta[property="og:image"]',
-            'newsLabelSel' => '.b-headline__top li a span',
-            'newsLabelText' => 'News'
+            'typeArticle' => '.b-headline__top li a span',
+            'typeArticleText' => 'News'
         ],
         'defaultImageCredit' => 'Digital Trends'
     ];
      **/
+
+    public function scrapeCategoryPage($config) {
+
+    }
+
     public function scrapeWebsite($config, $pageUrl = null) { //
         try {
 
@@ -76,14 +87,14 @@ class ScrapaWebsite {
             }
     
     
-            //check if is NEWS
-            if($selectors['newsLabelSel'] && $selectors['newsLabelText']) {
-                if($articleDoc->find($selectors['newsLabelSel']) == null) {
-                    throw new Exception("The article is not categorized as 'News'.");
+            //check article type
+            if($selectors['typeArticle'] && $selectors['typeArticleText']) {
+                if($articleDoc->find($selectors['typeArticle']) == null) {
+                    throw new Exception("Not of article type.");
                 }
-                $newsLabel = $articleDoc->find($selectors['newsLabelSel'])->text();
-                if (strpos($newsLabel, $selectors['newsLabelText']) === false) {
-                    throw new Exception("The article is not categorized as 'News'.");
+                $newsLabel = $articleDoc->find($selectors['typeArticle'])->text();
+                if (strpos($newsLabel, $selectors['typeArticleText']) === false) {
+                    throw new Exception("Not of article type.");
                 }
             }
 
@@ -121,17 +132,14 @@ class ScrapaWebsite {
             $content4 = $this->reorderAndExtractImages($content3);
             $content5 = $this->removeHtmlComments($content4);
             // $content5 = $this->removeEmptyElements($content4);//funct doesnt work
+
+            $content6 = $this->checkImgsInclusion($content5, $config['getImages']);
+
+           // $content7 = $this->checkTablesInclusion($content6, $config['getTables']);
+           
+
+            //remove table if needed
             
-            // my_log('CURRR');
-            // my_log($content1);
-            // return;
-
-            //$content3 = $this->removeHtmlAttributes($content1); // remove attributes from all tags
-            //$content4 = $this->simplifyImageTags($content1); //get images url, and replace non jpg,png with span
-            //$content5 = $this->reorderAndExtractImages($content4); //check if img is still nested, bring as first child 
-
-
-         
             return [
                 "title" => $title,
                 "content" => $content5,
@@ -150,6 +158,20 @@ class ScrapaWebsite {
             }
         }
     }
+
+    private function checkImgsInclusion($content, $isGetImages) {
+        if($isGetImages) return $content;
+
+        //remove images if needed
+        if($isGetImages == false) {
+            //REMOVE
+            $pattern = '/<img[^>]*>/';
+            $content_without_images = preg_replace($pattern, '', $content);
+            return $content_without_images;
+        }
+
+        return $content;
+   }
  
     private function isUrlScraped($url) {
         $scrapedUrlsFile = dirname(plugin_dir_path(__FILE__)) . '/scraped_urls.json'; // Update path as needed

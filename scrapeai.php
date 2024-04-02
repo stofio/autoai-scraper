@@ -8,17 +8,17 @@
  * License: GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
+register_activation_hook(__FILE__, 'scrapeai_activate');
 
-add_action('admin_enqueue_scripts', 'scrapeai_scripts');
+add_action('init', 'register_all_ajax', 1);
 
-add_action('init', 'register_source_cpt'); //custom post type for Sources
+add_action('admin_enqueue_scripts', 'scrapeai_scripts', 20);
 
-add_action('admin_menu', 'ai_scraper_custom_menu'); // Hook into the admin_menu action to add the new top-level menu and submenus
+add_action('init', 'register_source_cpt');
+
+add_action('admin_menu', 'ai_scraper_custom_menu');
 
 add_action('admin_init', 'save_source_form');
-
-//add_action('wp_ajax_run_scraper', 'ajax_run_scraper');
-//add_action('wp_ajax_run_scraper_from_url', 'ajax_run_scraper_from_url');
 
 add_action('wp_ajax_scrapeai_handle_bulk_scrape_ajax', 'scrapeai_handle_bulk_scrape_ajax'); //start bulk scraping
 
@@ -38,6 +38,32 @@ add_action('wp', 'run_rewrite_post');
 add_action('autoai_cron_hook', 'run_auto_post_single_cron_job');
 
 
+function register_all_ajax() {
+    if (is_admin()) {
+        require_once plugin_dir_path(__FILE__) . 'admin/admin-includes/ajaxActions.php';
+    }
+}
+
+function scrapeai_activate() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'autoai_processed';
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        url varchar(255) NOT NULL,
+        status varchar(100) NOT NULL,
+        processed_on datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        PRIMARY KEY  (id),
+        KEY url (url(191))
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+
+
 function scrapeai_scripts() {
     if (is_admin()) {
         global $pagenow;
@@ -45,7 +71,7 @@ function scrapeai_scripts() {
         $screen = get_current_screen();
 
        // Check if on your plugin's pages
-       $allowed_pages = array('ai-auto-post', 'autoai-from-url', 'autoai-sources', 'autoai-settings', 'autoai-bulk'); // Add your submenu pages here
+       $allowed_pages = array('ai-auto-post', 'autoai-from-url', 'autoai-sources', 'autoai-settings', 'scrapeai-bulk'); // Add your submenu pages here
        if (in_array($pagenow, $allowed_pages) || (isset($_GET['page']) && in_array($_GET['page'], $allowed_pages)) || $screen->post_type === 'sources_cpt') {
             wp_enqueue_script('jquery');
             wp_enqueue_script('ai-rewriter-script', plugins_url('/js/js.js', __FILE__), array( 
@@ -57,7 +83,7 @@ function scrapeai_scripts() {
 
         }
         
-        if(isset($_GET['page']) && $_GET['page'] == 'autoai-bulk') {
+        if ($pagenow === 'admin.php' && isset($_GET['page']) && $_GET['page'] === 'scrapeai-bulk') {
             wp_enqueue_script('scrapeai-bulk-scrape', plugin_dir_url(__FILE__) . '/admin/js/page-bulk.js', array('jquery'), null, true);
             wp_localize_script('scrapeai-bulk-scrape', 'scrapeaiBulkScrape', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
@@ -66,7 +92,6 @@ function scrapeai_scripts() {
         }
     }
 }
-
 
 
 function register_source_cpt() {
@@ -154,7 +179,7 @@ function ai_scraper_custom_menu() {
         'Bulk',                  // Page title
         'Bulk',                  // Menu title
         'manage_options',           // Capability required
-        'autoai-bulk',             // Menu slug
+        'scrapeai-bulk',             // Menu slug
         'autoai_bulk_page' // Function to display the page
     );
 }
@@ -256,7 +281,7 @@ function run_auto_post_single_cron_job($indexInSourceArray) {
     my_log('CRON JOB N: ');
     my_log($sources[$indexInSourceArray]);
 
-    run_single_auto_post($sources[$indexInSourceArray]);
+    runSingleAutoPost($sources[$indexInSourceArray]);
     my_second_log('INFO', 'Cron job run for: ' . $sources[$indexInSourceArray]['baseUrl']);
 
 
@@ -287,6 +312,8 @@ function scrapeai_handle_bulk_scrape_ajax() {
        echo $posted_url;
     }
 }
+
+
 
 
 ?>

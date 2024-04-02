@@ -2,12 +2,19 @@
 //this class calls openAI 
 //with prompts for various parts like title and excerpt, text piece, piece with image, table
 
+// Prevent direct access to this file
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
+
 class OpenAIRewriting {
 
     private $openAIApiKey;
     private $openAIApiUrl = 'https://api.openai.com/v1/chat/completions'; // Static value, can stay outside constructor
     private $openAiModel;
     private $language;
+
+
 
 	private $promptTemplates;
 
@@ -122,7 +129,7 @@ class OpenAIRewriting {
             ];
 
 	        $prompt = $this->prepareDynamicPrompt('titleAndExcerpt', $dynamicPartsTitleAndExcerpt);
-
+			
 	        $titleAndExcerptResponseArray = $this->sendToOpenAI($prompt);
 
 	        if (json_last_error() !== JSON_ERROR_NONE ||
@@ -151,11 +158,11 @@ class OpenAIRewriting {
             ];
 
 	        $articlePrompt = $this->prepareDynamicPrompt('articlePiece', $dynamicParts);
-
+			
 	        $articlePieceResponseArray = $this->sendToOpenAI($articlePrompt);
-
+			
 	        if (json_last_error() !== JSON_ERROR_NONE ||
-	            !isset($articlePieceResponseArray['choices'][0]['message']['content'])) {
+			!isset($articlePieceResponseArray['choices'][0]['message']['content'])) {
 	            throw new Exception('Error decoding JSON sendPromptPieceArticle or accessing content field');
 	        }
 
@@ -174,11 +181,11 @@ class OpenAIRewriting {
 	        }
 
 	        $dynamicParts = [
-                'title' => $title,
+				'title' => $title,
                 'content' => $contentPart,
                 'userPrompt' => $userPrompt
             ];
-
+			
 	        $articlePrompt = $this->prepareDynamicPrompt('articlePieceWithImage', $dynamicParts);
 
 	        $articlePieceResponseArray = $this->sendToOpenAI($articlePrompt);
@@ -188,6 +195,11 @@ class OpenAIRewriting {
 	            throw new Exception('Error decoding JSON sendPromptPieceArticle or accessing content field');
 	        }
 
+			//redo once if image placeholder is present
+			if($this->checkImagePlaceholder($articlePieceResponseArray['choices'][0]['message']['content'])) {
+				$articlePieceResponseArray = $this->sendToOpenAI($articlePrompt);
+			}
+
 	        return $articlePieceResponseArray['choices'][0]['message']['content'];
 
 	    } catch (Exception $e) {
@@ -195,6 +207,8 @@ class OpenAIRewriting {
 	        return null;
 	    }
 	}
+
+	
 
 
     public function rewriteTable($table, $title, $userPrompt) {
@@ -210,6 +224,7 @@ class OpenAIRewriting {
             ];
 
 	        $tablePrompt = $this->prepareDynamicPrompt('table', $dynamicParts);
+			
 
 	        $tableResponseArray = $this->sendToOpenAI($tablePrompt);
 
@@ -225,6 +240,18 @@ class OpenAIRewriting {
 	        return null;
 	    }
     }
+
+	private function checkImagePlaceholder($string) {
+		// Define the regular expression pattern
+		$pattern = '/^\[IMG_PLACEHOLDER\]$/';
+	
+		// Use preg_match to check if the pattern matches the string
+		if (preg_match($pattern, $string)) {
+			return true; // The string contains only [IMG_PLACEHOLDER]
+		} else {
+			return false; // The string does not match the pattern
+		}
+	}
 
     
 }

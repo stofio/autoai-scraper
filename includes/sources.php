@@ -87,7 +87,6 @@ function content_fetcher_general_info_callback($post) {
     ];
 
     ?>
-
         <label>Source type: </label>
         <select name="selectSourceType">
             <?php foreach ($source_types as $value => $label): ?>
@@ -97,20 +96,15 @@ function content_fetcher_general_info_callback($post) {
                 </option>
             <?php endforeach; ?>
         </select><br><br>
-
     <?php
 }
 
 function content_fetcher_rss_feed_callback($post) {
     wp_nonce_field(plugin_basename(__FILE__), 'content_fetcher_nonce');
-
-
     ?>
     <div>
-
         <label>RSS feed URL: </label>
         <input type="text" name="rssUrl" placeholder="https://..." value=""><br>
-
     </div>
     <?php
 }
@@ -164,6 +158,7 @@ function content_fetcher_ai_processing_callback($post) {
     wp_nonce_field(plugin_basename(__FILE__), 'content_fetcher_nonce');
 
     $saved_splitting_type = get_post_meta($post->ID, '_content_fetcher_splitting_type', true);
+    $saved_splitting_words = get_post_meta($post->ID, '_content_fetcher_splitting_words', true);
     $saved_title_excerpt = get_post_meta($post->ID, '_content_fetcher_title_excerpt', true);
     $saved_piece_article = get_post_meta($post->ID, '_content_fetcher_piece_article', true);
     $saved_table = get_post_meta($post->ID, '_content_fetcher_table', true);
@@ -178,15 +173,19 @@ function content_fetcher_ai_processing_callback($post) {
 
         <h3><b>AI rewriting settings</b></h3>
 
-        <label>Content splitting: </label>
+        <!-- <label>Content splitting: </label>
         <select name="selectSplittingType">
-            <?php foreach ($splitting_types as $value => $label): ?>
-                <option value="<?php echo esc_attr($value); ?>" 
-                    <?php selected($saved_splitting_type, $value); ?>>
-                    <?php echo esc_html($label); ?>
+            <?php //foreach ($splitting_types as $value => $label): ?>
+                <option value="<?php //echo esc_attr($value); ?>" 
+                    <?php //selected($saved_splitting_type, $value); ?>>
+                    <?php// echo esc_html($label); ?>
                 </option>
-            <?php endforeach; ?>
-        </select><br><br>
+            <?php //endforeach; ?>
+        </select><br><br> -->
+
+        <label>Max words per chunk (aprox.): </label>
+        <input type="number" name="maxChunkWords" min="20" max="3000" value="<?php echo $saved_splitting_words ? esc_attr($saved_splitting_words) : 300 ?>"><br><br>
+
 
         <h3><b>Prompts instructions</b></h3>
 
@@ -254,35 +253,26 @@ function content_fetcher_miscellaneous_callback($post) {
     wp_nonce_field(plugin_basename(__FILE__), 'content_fetcher_nonce');
 
     $saved_get_images = get_post_meta($post->ID, '_content_fetcher_get_images', true);
-    $saved_set_original_image_caption = get_post_meta($post->ID, '_content_fetcher_set_original_image_caption', true);
-    $saved_set_custom_image_caption = get_post_meta($post->ID, '_content_fetcher_set_custom_image_caption', true);
-    $saved_images_credit = get_post_meta($post->ID, '_content_fetcher_images_credit', true);
     $saved_get_tables = get_post_meta($post->ID, '_content_fetcher_get_tables', true);
+    $saved_images_credit = get_post_meta($post->ID, '_content_fetcher_images_credit', true);
 
     ?>
     <div>
 
         <h3><b>Other settings</b></h3>
 
-        <label>Get images
-            <input type="checkbox" name="toGetImages" <?php checked($saved_get_images, '1'); ?> />
-        </label><br><br>
-
-        <label>Set original image caption
-            <input type="checkbox" name="toSetOriginalImgCaption" <?php checked($saved_set_original_image_caption, '1'); ?> />
-        </label><br><br>
-
-        <label>Set custom image caption
-            <input type="checkbox" name="toSetCustomImgCaption" <?php checked($saved_set_custom_image_caption, '1'); ?> />
-        </label><br><br>
-
-        <label>Custom images caption: </label>
-        <input type="text" name="imagesCredit" placeholder="images credits" value="<?php echo esc_attr($saved_images_credit); ?>"><br><br>
-
         <label>Get tables
-            <input type="checkbox" name="toGetTables" <?php checked($saved_get_tables, '1'); ?> />
+            <input type="checkbox" name="toGetTables" <?php echo ($saved_get_tables === '1' || $saved_get_tables === '') ? 'checked' : ''; ?> />
         </label><br>
 
+        <label>Get images   
+            <input type="checkbox" name="toGetImages" <?php echo ($saved_get_images === '1' || $saved_get_images === '') ? 'checked' : ''; ?> />
+        </label><br><br>
+
+        <label>Custom image caption: </label>
+        <input type="text" name="imagesCredit" placeholder="image credits" value="<?php echo esc_attr($saved_images_credit); ?>"><br><br>
+
+        
     </div>
     <?php
 }
@@ -381,8 +371,13 @@ function content_fetcher_save_source_meta($post_id) {
     }
 
     // Save Content Splitting Type
-    if (isset($_POST['selectSplittingType'])) {
-        update_post_meta($post_id, '_content_fetcher_splitting_type', sanitize_text_field($_POST['selectSplittingType']));
+    // if (isset($_POST['selectSplittingType'])) {
+    //     update_post_meta($post_id, '_content_fetcher_splitting_type', sanitize_text_field($_POST['selectSplittingType']));
+    // }
+
+    // Save Content Splitting Words Number
+    if (isset($_POST['maxChunkWords'])) {
+        update_post_meta($post_id, '_content_fetcher_splitting_words', sanitize_text_field($_POST['maxChunkWords']));
     }
 
     // Save Title and Excerpt
@@ -418,14 +413,6 @@ function content_fetcher_save_source_meta($post_id) {
     $toGetImages = isset($_POST['toGetImages']) ? '1' : '0';
     update_post_meta($post_id, '_content_fetcher_get_images', $toGetImages);
 
-    // Save Set Original Image Caption
-    $toSetOriginalImgCaption = isset($_POST['toSetOriginalImgCaption']) ? '1' : '0';
-    update_post_meta($post_id, '_content_fetcher_set_original_image_caption', $toSetOriginalImgCaption);
-
-    // Save Set Custom Image Caption
-    $toSetCustomImgCaption = isset($_POST['toSetCustomImgCaption']) ? '1' : '0';
-    update_post_meta($post_id, '_content_fetcher_set_custom_image_caption', $toSetCustomImgCaption);
-
     // Save Images Credit
     if (isset($_POST['imagesCredit'])) {
         update_post_meta($post_id, '_content_fetcher_images_credit', sanitize_text_field($_POST['imagesCredit']));
@@ -434,7 +421,6 @@ function content_fetcher_save_source_meta($post_id) {
     // Save Get Tables
     $toGetTables = isset($_POST['toGetTables']) ? '1' : '0';
     update_post_meta($post_id, '_content_fetcher_get_tables', $toGetTables);
-
 }
 
 
@@ -442,7 +428,6 @@ function content_fetcher_save_post_categories($post_id) {
     // Verify the nonce before proceeding.
     if (!isset($_POST['content_fetcher_nonce']) || !wp_verify_nonce($_POST['content_fetcher_nonce'], plugin_basename(__FILE__)))
         return;
-
 
     // Save Main Category
     if (isset($_POST['main_category_id'])) {

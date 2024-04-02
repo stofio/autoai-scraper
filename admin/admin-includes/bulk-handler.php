@@ -6,13 +6,12 @@ function scrapeai_process_url() {
     // Verify the nonce for security
     check_ajax_referer('scrapeai_bulk_scrape_nonce', 'nonce');
     
-    require_once plugin_dir_path(__FILE__) . '../../includes/main.php';
+    require_once plugin_dir_path(__FILE__) . '../../includes/classes/clsMain.php';
     $url = isset($_POST['url']) ? sanitize_text_field($_POST['url']) : '';
-    $theSource = getSourceConfigByUrl($url);
+    $theSource = getSourceByUrl($url);
 
-
-    $postedUrl = run_single_auto_post($theSource, $url);
-    
+    $main = new ScrapeAiMain();
+    $postedUrl = $main->runSingleAutoPost($theSource, $url);
 
     if ($postedUrl) {
         wp_send_json_success(['message' => "URL processed successfully: $postedUrl"]);

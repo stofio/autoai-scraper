@@ -2,6 +2,7 @@
 require_once plugin_dir_path(__FILE__) . '/admin-includes/handle-actions.php';
 ?>
 
+
 <div class="page-container">
     <h1>AI Auto Post</h1>
     <div class="white-container result-cont">
@@ -22,7 +23,6 @@ require_once plugin_dir_path(__FILE__) . '/admin-includes/handle-actions.php';
             echo "No upcoming auto process runs found. Try adding a source or activate one\n";
         }
 
-
         
         echo '<h2>⇐ Previous auto run</h2>';
         $prev_run = get_option('autoai_last_cron_run', '');
@@ -41,7 +41,7 @@ require_once plugin_dir_path(__FILE__) . '/admin-includes/handle-actions.php';
 
         <br><br>
         <input type="button" id="runAutoPostBtn" value="Run Manual Auto Post For All Sources">
-        <p id="loadingTest" style="display:none">Processing... <span><img style="width: 30px" src="<?php echo plugins_url('../loading-gif.gif', __FILE__); ?>"></span></p>
+        <p id="loadingTest" style="display:none">Processing... <span><img style="width: 30px" src="<?php echo plugins_url('../assets/loading-gif.gif', __FILE__); ?>"></span></p>
 
     </div>
 
@@ -112,7 +112,7 @@ require_once plugin_dir_path(__FILE__) . '/admin-includes/handle-actions.php';
                 type: 'POST',
                 async: true,
                 data: {
-                    action: 'run_single_auto_post',
+                    action: 'runSingleAutoPost',
                     single_source: singleSource
                 },
                 success: resolve,

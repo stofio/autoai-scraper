@@ -1,7 +1,14 @@
 <?php
+//this class is used for operations related to wordpress posting or the articles, with image processing
+
+// Prevent direct access to this file
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
+
 
 class clsPosting {
-    public function createNewPost($article, $categoryIDs) {
+    public function createNewPost($article, $sourceSettings, $jobSettings) {
         try {
             $content = trim($article['content']);
             if (empty($content)) {
@@ -9,10 +16,11 @@ class clsPosting {
             }
     
             $content = $this->getAndDownloadImagesInNewContent($content);
-    
-            $post_id = $this->insertPost($article, $categoryIDs);
+
+            $post_id = $this->insertPost($article, $jobSettings, $sourceSettings);
+
             if (is_wp_error($post_id)) {
-                my_second_log('ERROR', 'Failed to attach insert post');
+                my_second_log('ERROR', 'Failed to insert post');
                 throw new Exception('Failed to insert post: ' . $post_id->get_error_message());
             }
     
@@ -24,22 +32,75 @@ class clsPosting {
             return $post_id;
         } catch (Exception $e) {
             my_second_log('ERROR', $e->getMessage());
-            return 'error';
+            return false;
         }
     }
     
-    private function insertPost($article, $categoryIDs) {
-        $categoryIDs = is_string($categoryIDs) ? array((int)$categoryIDs) : $categoryIDs;
+    private function insertPost($article, $jobSettings, $sourceSettings) {
+        //categories
+        if(isset($jobSettings['isDefaultCategories'])) {
+            $mainCategoryID = $sourceSettings['_content_fetcher_main_category'];
+            $additionalCategoryIDs = $sourceSettings['_content_fetcher_additional_categories'];
+        }
+        else {
+            $mainCategoryID = $jobSettings['mainCategory'];
+            $additionalCategoryIDs = $jobSettings['additionalCategories'];
+        }
     
+        // Merge main category ID with additional category IDs
+        $mainCategoryID = $mainCategoryID ?? [];
+        $additionalCategoryIDs = $additionalCategoryIDs ?? [];
+
+        // Ensure $mainCategoryID and $additionalCategoryIDs are arrays
+        if (!is_array($mainCategoryID)) {
+            $mainCategoryID = [$mainCategoryID];
+        }
+        if (!is_array($additionalCategoryIDs)) {
+            $additionalCategoryIDs = [$additionalCategoryIDs];
+        }
+
+        $categoryIDs = array_merge($mainCategoryID, $additionalCategoryIDs);
+
+
+
+        //POST STATUS
+        // Check if scheduling options are provided
+        if ($jobSettings['startDate'] != null) {
+            $startDate = strtotime($jobSettings['startDate']);
+            $interval = intval($jobSettings['interval']) * 3600;
+
+            // Calculate post date based on position and interval
+            $post_date = $startDate + ($interval * $jobSettings['index']);
+
+            // Check if current time is after the calculated post date
+            if (current_time('timestamp') < $post_date) {
+                // Schedule the post for future publishing
+                $post_status = 'future';
+            }
+        }
+        else {
+            if($jobSettings['postStatus'] == 'default') {
+                $post_status = $sourceSettings['_content_fetcher_post_status'][0];
+            }
+            else {
+                $post_status = $jobSettings['postStatus'];
+            }
+        }
+
+    
+        // Insert post
         $post_data = array(
             'post_title'    => $article['title'],
             'post_excerpt'  => $article['excerpt'],
             'post_content'  => $article['content'],
-            'post_status'   => 'publish',
-            'post_author'   => 1, // or another user ID
-            'post_type'     => 'post',
-           'post_category' => $categoryIDs
+            'post_status'   => $post_status,
+            'post_author'   => 1,
+            'post_category' => $categoryIDs
         );
+
+        if ($post_status == 'future') {
+            $post_data['post_date'] = date('Y-m-d H:i:s', $post_date);
+        }
     
         $post_id = wp_insert_post($post_data);
         if (is_wp_error($post_id)) {
@@ -48,7 +109,9 @@ class clsPosting {
         }
     
         return $post_id; // Return the ID of the new post
-    }
+    } 
+    
+    
     
     
     private function updatePost($article, $post_id) {
@@ -108,6 +171,8 @@ class clsPosting {
     
         foreach ($images as $img) {
             $src = $img->getAttribute('src');
+
+           // if(!isValidUrl($src)) continue;
     
             // Download the image and get the new URL
             $newUrl = $this->downloadAndUploadImage($src);

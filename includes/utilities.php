@@ -153,3 +153,18 @@ function getBaseUrl($url) {
 }
 
 
+function getSubstringBeforeFirstDot($inputString) {
+    // Find the position of the first dot in the string
+    $firstDotPosition = strpos($inputString, '.');
+
+    // Check if a dot was found
+    if ($firstDotPosition !== false) {
+        // Extract the substring before the first dot
+        $substringBeforeDot = substr($inputString, 0, $firstDotPosition);
+
+        return $substringBeforeDot;
+    } else {
+        // If no dot is found, handle the situation accordingly
+        return "No dot found in the string.";
+    }
+}

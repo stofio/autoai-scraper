@@ -11,7 +11,7 @@ require_once plugin_dir_path(__FILE__) . '/admin-includes/handle-actions.php';
         <p>First add configurations in Sources for the website URL, otherwise it will not work</p>
         <input type="text" style="width: 100%;" id="autoai_url_input" placeholder="URL" />
         <input type="button" id="runFromUrlBtn" value="Run Auto Post From URL">
-        <p id="loadingTest" style="display:none">Processing... <span><img style="width: 30px" src="<?php echo plugins_url('../loading-gif.gif', __FILE__); ?>"></span></p>
+        <p id="loadingTest" style="display:none">Processing... <span><img style="width: 30px" src="<?php echo plugins_url('../assets/loading-gif.gif', __FILE__); ?>"></span></p>
 
     </div>
 

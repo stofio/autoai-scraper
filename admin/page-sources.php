@@ -256,7 +256,7 @@ else {
 
 
 
-<p id="loadingTest" style="display:none">Processing... <span><img style="width: 30px" src="<?php echo plugins_url('../loading-gif.gif', __FILE__); ?>"></span></p>
+<p id="loadingTest" style="display:none">Processing... <span><img style="width: 30px" src="<?php echo plugins_url('../assets/loading-gif.gif', __FILE__); ?>"></span></p>
 <div class="test-results" style="margin-top: 30px;display:none">
     <div class="white-container" style="display:none">
         <h3>[ Scraped article URL ]:</h3>

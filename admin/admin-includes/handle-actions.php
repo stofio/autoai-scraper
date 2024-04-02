@@ -6,7 +6,7 @@ add_action('wp_ajax_delete_source', 'delete_source_handler');
 
 add_action('wp_ajax_run_auto_post', 'run_auto_post_handler'); //deprecated?
 
-add_action('wp_ajax_run_single_auto_post', 'run_single_auto_post_handler');
+add_action('wp_ajax_runSingleAutoPost', 'runSingleAutoPost_handler');
 
 add_action('wp_ajax_run_post_from_url', 'run_post_from_url');
 
@@ -145,7 +145,7 @@ function run_auto_post_handler() {
 }
 
 
-function run_single_auto_post_handler() {
+function runSingleAutoPost_handler() {
     
         //get source
         $source = $_POST['single_source'];
@@ -153,7 +153,7 @@ function run_single_auto_post_handler() {
         //scrape
         require_once plugin_dir_path(__FILE__) . '../../includes/main.php';
 
-        $scrapedData = run_single_auto_post($source);
+        $scrapedData = runSingleAutoPost($source);
         // Send the array back to JavaScript
         wp_send_json($scrapedData);
 
@@ -169,14 +169,14 @@ function run_post_from_url() {
         $url = $_POST['url'];
 
         //get source
-        $theSource = getSourceConfigByUrl($url);
+        $theSource = getSourceByUrl($url);
 
         if($theSource == null) {
             my_second_log('ERROR', 'There is no configuration for this website url');
             echo 'errorNoConfiguration';
         }
         else {
-            $postedUrl = run_single_auto_post($theSource, $url);
+            $postedUrl = runSingleAutoPost($theSource, $url);
             if($postedUrl == null) {
                 echo '';
             }
@@ -188,30 +188,6 @@ function run_post_from_url() {
 }
 
 
-function getSourceConfigByUrl($url) {
-    $urlBase = getBaseUrl($url);
-    $coincidingSource = null;
-
-    $allsources = get_option('ai_scraper_websites', []);
-    $allsourcesCopy = $allsources;
-
-    $length = count($allsources);
-    for ($i = 0; $i < $length; $i++) {
-        //$source = $allsources[$i];
-
-        if(getBaseUrl($allsources[$i]['baseUrl']) == $urlBase) {
-            $coincidingSource = $allsourcesCopy[$i];
-            break;
-        }
-    }
-
-    if($coincidingSource == null) {
-        return null;
-    }
-    else {
-        return $coincidingSource;
-    }
-}
 
 
 function autoai_display_today_log_shortcode() {
@@ -263,7 +239,7 @@ function rewrite_the_post_callback() {
 
     require_once plugin_dir_path(__FILE__) . '../../includes/main.php';
 
-    $theSource = getSourceConfigByUrl($original_url);
+    $theSource = getSourceByUrl($original_url);
 
     rewritePostAndPost($theSource, $original_url, $post_id);
     
