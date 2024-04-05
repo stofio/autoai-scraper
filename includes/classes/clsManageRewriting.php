@@ -84,7 +84,7 @@ class clsManageRewriting {
         $dom = new DOMDocument();
         @$dom->loadHTML($encodedContent);
         
-        
+
         $chunks = $this->createChunks($dom, $wordLimit);
         $chunks2 = $this->extractTables($chunks);
         $chunks3 = $this->splitChunksByImages($chunks2);

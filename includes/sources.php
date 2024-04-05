@@ -123,32 +123,40 @@ function content_fetcher_web_scraping_callback($post) {
     ?>
     <div>
 
-        <h3><b>Category page selector</b></h3>
+        <div class="meta-box-inner">
+            <h3><b>Category page selector</b><img class="question-hint" id="hintCatPage" src="<?php echo plugins_url('../assets/question.svg', __FILE__); ?>" /></h3>
 
-        <label>Category page URL: </label>
-        <input type="text" name="baseUrl" placeholder="https://..." value="<?php echo esc_attr($saved_base_url); ?>"><br>
+            <label>Category page URL: </label>
+            <input type="text" name="baseUrl" placeholder="https://..." value="<?php echo esc_attr($saved_base_url); ?>"><br>
 
-        <label>Last article cat page selector (takes first a href in the selected box):: </label>
-        <input type="text" name="catPageLastArticle" placeholder="CSS selector" value="<?php echo esc_attr($saved_cat_page_last_article); ?>"><br>
+            <label>Last article selector (takes first a href of the first article): </label>
+            <input type="text" name="catPageLastArticle" placeholder="CSS selector" value="<?php echo esc_attr($saved_cat_page_last_article); ?>"><br>             
+        </div>
 
-        <h3><b>Article page selectors</b></h3>
+        <div class="meta-box-inner">
+            <h3><b>Article page selectors</b></h3>
 
-        <label>Title selector: </label>
-        <input type="text" name="title" placeholder="CSS selector" value="<?php echo esc_attr($saved_title_selector); ?>"><br><br>
+            <label>Title selector: </label>
+            <input type="text" name="title" placeholder="CSS selector" value="<?php echo esc_attr($saved_title_selector); ?>"><br><br>
 
-        <label>Content selector: </label>
-        <input type="text" name="content" placeholder="CSS selector" value="<?php echo esc_attr($saved_content_selector); ?>"><br><br>
+            <label>Content selector: </label>
+            <input type="text" name="content" placeholder="CSS selector" value="<?php echo esc_attr($saved_content_selector); ?>"><br><br>
 
-        <label>Featured image url selector: </label>
-        <input type="text" name="imageUrl" placeholder="CSS selector" value="<?php echo esc_attr($saved_image_url_selector); ?>"><br><br>
+            <label>Featured image url selector: </label>
+            <input type="text" name="imageUrl" placeholder="CSS selector" value="<?php echo esc_attr($saved_image_url_selector); ?>"><br><br>
 
-        <label>Article type selector (optional): </label>
-        <input type="text" name="newsLabelSel" placeholder="CSS selector" value="<?php echo esc_attr($saved_news_label_selector); ?>"><br><br>
+            <label>Article type selector (optional): </label>
+            <input type="text" name="newsLabelSel" placeholder="CSS selector" value="<?php echo esc_attr($saved_news_label_selector); ?>"><br><br>
 
-        <label>Article type text (optional): </label>
-        <input type="text" name="newsLabelText" placeholder="ex. News" value="<?php echo esc_attr($saved_news_label_text); ?>"><br><br>
+            <label>Article type text (optional): </label>
+            <input type="text" name="newsLabelText" placeholder="ex. News" value="<?php echo esc_attr($saved_news_label_text); ?>"><br><br>
+        </div>
 
-
+        <div class="meta-box-inner test-url">
+            <label for="test_source_url">Test the source by entering the URL of a source article</label><br>
+            <input type="text" id="test_source_url" name="test_source_url" placeholder="URL">
+            <button id="testSourceButton" class="button">Test</button>
+        </div>
 
     </div>
     <?php

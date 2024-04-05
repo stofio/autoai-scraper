@@ -39,7 +39,7 @@ class ScrapeAiMain {
         //add to published
     }
 
-    private function getScrapedData($sourceSettings, $url) {
+    public function getScrapedData($sourceSettings, $url) {
         // Prepare args for scraping
         $websiteConfig = [
             'baseUrl' => $sourceSettings['_content_fetcher_scraping_url'][0],

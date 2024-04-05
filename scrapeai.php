@@ -20,7 +20,6 @@ add_action('admin_menu', 'ai_scraper_custom_menu');
 
 add_action('admin_init', 'save_source_form');
 
-add_action('wp_ajax_scrapeai_handle_bulk_scrape_ajax', 'scrapeai_handle_bulk_scrape_ajax'); //start bulk scraping
 
 //
 //settings page 
@@ -78,9 +77,7 @@ function scrapeai_scripts() {
                 'jquery', 'wp-blocks', 'wp-element', 'wp-data' 
             ));
             wp_localize_script('ai-rewriter-script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
-
             wp_enqueue_style('ai-rewriter-style', plugins_url('/css/css.css', __FILE__));
-
         }
         
         if ($pagenow === 'admin.php' && isset($_GET['page']) && $_GET['page'] === 'scrapeai-bulk') {
@@ -88,6 +85,14 @@ function scrapeai_scripts() {
             wp_localize_script('scrapeai-bulk-scrape', 'scrapeaiBulkScrape', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('scrapeai_bulk_scrape_nonce'),
+            ));
+        }
+
+        if ($screen && $screen->post_type === 'sources_cpt' && $screen->base === 'post') {
+            wp_enqueue_script('scrapeai-source-script', plugin_dir_url(__FILE__) . '/admin/js/single-source.js', array('jquery'), null, true);
+            wp_localize_script('scrapeai-source-script', 'scrapeaiSingleSource', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('scrapeai_single_source_nonce'),
             ));
         }
     }
@@ -293,25 +298,6 @@ function run_auto_post_single_cron_job($indexInSourceArray) {
 }
 
 
-function scrapeai_handle_bulk_scrape_ajax() {
-    // Verify the nonce for security
-    check_ajax_referer('my_plugin_bulk_scrape_nonce', 'nonce');
-
-    // Extract and sanitize form data
-    $urls = isset($_POST['urls']) ? sanitize_textarea_field($_POST['urls']) : '';
-    $is_default_categories = isset($_POST['is_default_categories']) ? sanitize_text_field($_POST['is_default_categories']) : '';
-    $main_category = isset($_POST['main_category']) ? absint($_POST['main_category']) : 0; // Assuming this is an ID
-    $additional_categories = isset($_POST['additional_categories']) ? array_map('absint', $_POST['additional_categories']) : array();
-    $post_status = isset($_POST['post_status']) ? sanitize_text_field($_POST['post_status']) : 'draft';
-    $tags = isset($_POST['tags']) ? sanitize_text_field($_POST['tags']) : '';
-
-    require_once plugin_dir_path(__FILE__) . 'includes/main.php';
-    $url = isset($_POST['url']) ? sanitize_text_field($_POST['url']) : '';
-    if (!empty($url)) {
-        $posted_url = run_scraper_from_url($url);
-       echo $posted_url;
-    }
-}
 
 
 

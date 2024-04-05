@@ -43,6 +43,7 @@ class ScrapaWebsite {
             $url = $config['baseUrl'];
             $selectors = $config['selectors'];
 
+
             if(!$pageUrl) {
 
                 // Initial request to get the list of articles or the CATEGORY page
@@ -97,7 +98,7 @@ class ScrapaWebsite {
                     throw new Exception("Not of article type.");
                 }
             }
-
+            
             if($articleDoc->find($selectors['title'])) {
                 $title = $articleDoc->find($selectors['title'])->text();
             }
@@ -131,18 +132,16 @@ class ScrapaWebsite {
             $content3 = $this->simplifyImg($content2);
             $content4 = $this->reorderAndExtractImages($content3);
             $content5 = $this->removeHtmlComments($content4);
-            // $content5 = $this->removeEmptyElements($content4);//funct doesnt work
+            //$content5 = $this->removeEmptyElements($content4);//funct doesnt work
 
             $content6 = $this->checkImgsInclusion($content5, $config['getImages']);
 
-           // $content7 = $this->checkTablesInclusion($content6, $config['getTables']);
+           //$content7 = $this->checkTablesInclusion($content6, $config['getTables']);
            
-
-            //remove table if needed
             
             return [
                 "title" => $title,
-                "content" => $content5,
+                "content" => $content6,
                 "img-url" => $imageUrl,
                 "img-credit" => $imageCredit,
                 "original-url" => $articleUrl
@@ -161,7 +160,6 @@ class ScrapaWebsite {
 
     private function checkImgsInclusion($content, $isGetImages) {
         if($isGetImages) return $content;
-
         //remove images if needed
         if($isGetImages == false) {
             //REMOVE
@@ -169,8 +167,10 @@ class ScrapaWebsite {
             $content_without_images = preg_replace($pattern, '', $content);
             return $content_without_images;
         }
+        else {
+            return $content;
+        }
 
-        return $content;
    }
  
     private function isUrlScraped($url) {
@@ -201,6 +201,7 @@ class ScrapaWebsite {
         return $flatDom->saveHTML();
     }
 
+    //make all nested nodes at the same first level
     private function flattenNodes(DOMNode $node, DOMDocument $flatDom) {
         foreach ($node->childNodes as $child) {
             if ($child->nodeType === XML_ELEMENT_NODE) {
@@ -316,51 +317,41 @@ class ScrapaWebsite {
     }
 
     private function simplifyImg($htmlString) {
-       // Create a DOMDocument instance
-       $doc = new DOMDocument();
-       libxml_use_internal_errors(true); // Suppress parsing errors/warnings
-
-       // Load the HTML string wrapped in a special tag to preserve structure
-       $doc->loadHTML('<div id="custom-root">' . $htmlString . '</div>');
-       libxml_clear_errors(); // Clear errors after loading
-
-       $root = $doc->getElementById('custom-root');
-
-       // Find all image tags
-       $images = $root->getElementsByTagName('img');
-
-       // Iterate over all images
-       foreach ($images as $img) {
-           // Check each attribute
-           // my_log('IMGGGG');
-            //my_log($img);
-           foreach ($img->attributes as $attr) {
-               $value = $attr->value;
-               // Check if the attribute value is a valid URL with specific extensions
-               if (preg_match('/\.(jpg|jpeg|png|webp)(\?.*)?$/i', $value)) {
-                   // Create a new image tag with only the src attribute
-                   $newImg = $doc->createElement('img');
-                   $newImg->setAttribute('src', $value);
-
-                   // Replace the old image tag with the new one
-                   $img->parentNode->replaceChild($newImg, $img);
-                   break; // Exit the loop after replacement
-               }
-           }
-       }
-
-       // Extract and return the modified HTML inside the custom root
-       $newHtml = '';
-       foreach ($root->childNodes as $child) {
-           $newHtml .= $doc->saveHTML($child);
-       }
-
-       return $newHtml;
+        // Create a Crawler instance
+        $crawler = new Crawler($htmlString);
+    
+        // Find all image tags
+        $images = $crawler->filter('img');
+    
+        // Iterate over all images
+        foreach ($images as $img) {
+            // Check each attribute
+            $value = $img->getAttribute('src');
+    
+            // Check if the attribute value is a valid URL with specific extensions
+            if (preg_match('/\.(jpg|jpeg|png|webp)(\?.*)?$/i', $value)) {
+                // Create a new image tag with only the src attribute
+                $newImg = '<img src="' . $value . '">';
+    
+                // Create a new Crawler instance for the new image tag
+                $newCrawler = new Crawler($newImg);
+    
+                // Replace the old image tag with the new one
+                $img->parentNode->replaceChild(
+                    $img->ownerDocument->importNode($newCrawler->getNode(0), true),
+                    $img
+                );
+            }
+        }
+    
+        return $crawler->html();
     }
 
     private function reorderAndExtractImages($content) {
+        $content = mb_convert_encoding('<?xml encoding="UTF-8">' . $content, 'UTF-8', 'auto');
         $dom = new DOMDocument();
         @$dom->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $dom->encoding = 'UTF-8';
 
         $newDom = new DOMDocument();
         $body = $newDom->createElement('body');
@@ -412,16 +403,19 @@ class ScrapaWebsite {
         $processNode($dom->documentElement);
 
         //remove body tag
+        $dom->encoding = 'UTF-8';
         $htmlString = $newDom->saveHTML($body);
         $htmlString = str_replace(array('<body>', '</body>'), '', $htmlString);
 
         // Decode HTML entities
-        $htmlString = html_entity_decode($htmlString);
+       // $htmlString = html_entity_decode($htmlString, ENT_QUOTES, 'UTF-8');
         // Remove strange characters
-        $htmlString = preg_replace('/&#x[a-fA-F0-9]{2,};/', '', $htmlString);
+        //$htmlString = preg_replace('/&#x[a-fA-F0-9]{2,};/', '', $htmlString);
 
-        return $htmlString;
+        return mb_convert_encoding($htmlString, 'UTF-8', 'HTML-ENTITIES');
     }
+
+
 
     private function removeScriptTags($htmlString) {
         $htmlString = mb_convert_encoding($htmlString, 'UTF-8', 'auto');

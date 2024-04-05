@@ -45,7 +45,7 @@ class OpenAIRewriting {
 					Rewrite this content piece in {$this->language}:
 					Article title: '{title}',
 					Content piece: '{content}',
-					User Instructions: '{userPrompt}'. Return html elements.
+					User Instructions: '{userPrompt}'. Return only the content rewritten in html elements without title.
 				EOT
 			],
 			'articlePieceWithImage' => [
@@ -53,7 +53,6 @@ class OpenAIRewriting {
 					Rewrite this content piece in {$this->language}. [IMG_PLACEHOLDER] represents an image tag <img/>.:
 					Article title: '{title}',
 					Content piece: '{content}',
-					And suppose that before and after this content there may be other content of the entire article
 					Rewriting instructions: '{userPrompt}'. 
 					Return only the content rewritten in html elements without title, reinsert [IMG_PLACEHOLDER] in the content.
 				EOT
