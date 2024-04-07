@@ -187,16 +187,19 @@ class OpenAIRewriting {
 			
 	        $articlePrompt = $this->prepareDynamicPrompt('articlePieceWithImage', $dynamicParts);
 
-	        $articlePieceResponseArray = $this->sendToOpenAI($articlePrompt);
+			$maxRetries = 5;
+			//my_log('STAART');
+			for($i = 0; $i < $maxRetries; $i++) {
 
-	        if (json_last_error() !== JSON_ERROR_NONE ||
-	            !isset($articlePieceResponseArray['choices'][0]['message']['content'])) {
-	            throw new Exception('Error decoding JSON sendPromptPieceArticle or accessing content field');
-	        }
-
-			//redo once if image placeholder is present
-			if($this->checkImagePlaceholder($articlePieceResponseArray['choices'][0]['message']['content'])) {
+				my_log('TRY ' . $i);
+				
 				$articlePieceResponseArray = $this->sendToOpenAI($articlePrompt);
+				$validated = $this->validateImagePlaceholder($articlePieceResponseArray['choices'][0]['message']['content']);
+				
+				if($validated != false) {
+					$articlePieceResponseArray['choices'][0]['message']['content'] = $validated;
+					break; 
+				}
 			}
 
 	        return $articlePieceResponseArray['choices'][0]['message']['content'];
@@ -231,8 +234,10 @@ class OpenAIRewriting {
 	            !isset($tableResponseArray['choices'][0]['message']['content'])) {
 	            throw new Exception('Error decoding JSON sendPromptPieceArticle or accessing content field');
 	        }
-
+			
 	        return $tableResponseArray['choices'][0]['message']['content'];
+
+
 
 	    } catch (Exception $e) {
 	        my_second_log('ERROR', $e->getMessage());
@@ -251,6 +256,31 @@ class OpenAIRewriting {
 			return false; // The string does not match the pattern
 		}
 	}
+
+	//return false if placeholder not present, or return chunk if its wrong placed
+	private function validateImagePlaceholder($chunk) {
+		// check if and image tag is present into $chunk and replace it
+		$doc = new DOMDocument();
+		$doc->loadHTML($chunk);
+		$images = $doc->getElementsByTagName('img');
+		if($images->length > 0) {
+			// Loop through images and replace with placeholder
+			foreach($images as $image) {
+				$placeholder = $doc->createTextNode('[IMG_PLACEHOLDER]');
+				$image->parentNode->replaceChild($placeholder, $image);
+			}
+			return $doc->saveXML();
+		}
+		
+		// Check if [IMG_PLACEHOLDER] exists in the chunk
+		if (strpos($chunk, '[IMG_PLACEHOLDER]') != false) {
+			return $chunk;
+		}
+
+		// Either [IMG_PLACEHOLDER] doesn't exist or it's inside src="", return false
+		return false;
+	}
+
 
     
 }

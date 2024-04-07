@@ -14,8 +14,9 @@ class clsPosting {
             if (empty($content)) {
                 throw new Exception('Content is empty, article cannot be created.');
             }
-    
-            $content = $this->getAndDownloadImagesInNewContent($content);
+
+            $newContent = $this->getAndDownloadImagesInNewContent($content);
+            $article['content'] = $newContent;
 
             $post_id = $this->insertPost($article, $jobSettings, $sourceSettings);
 
@@ -173,10 +174,9 @@ class clsPosting {
             $src = $img->getAttribute('src');
 
            // if(!isValidUrl($src)) continue;
-    
-            // Download the image and get the new URL
+
             $newUrl = $this->downloadAndUploadImage($src);
-    
+
             if ($newUrl) {
                 // Replace the old src with the new URL
                 $img->setAttribute('src', $newUrl);
@@ -190,6 +190,8 @@ class clsPosting {
     }
     
     private function downloadAndUploadImage($imageUrl) {
+       if(!$this->isValidImageUrl($imageUrl)) return null;
+
         require_once(ABSPATH . 'wp-admin/includes/file.php');
         require_once(ABSPATH . 'wp-admin/includes/media.php');
         require_once(ABSPATH . 'wp-admin/includes/image.php');
@@ -229,6 +231,36 @@ class clsPosting {
         // Return the URL of the uploaded image
         return wp_get_attachment_url($attach_id);
     }
+
+    function isValidImageUrl($url) {
+        
+
+        if(!filter_var($url, FILTER_VALIDATE_URL)) {
+         return false;
+        }
+      
+        $path = parse_url($url, PHP_URL_PATH);
+        
+        // Check common image extensions
+        $imageExtensions = array('jpg', 'jpeg', 'png', 'gif', 'bmp'); 
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        
+        if(!in_array($ext, $imageExtensions)) {
+            return false;
+        }
+      
+        // Attempt to get image size
+        $imageSize = getimagesize($url);
+        
+        if($imageSize === false) {
+            return false; 
+        }
+        
+        return true;
+      
+    }
+    
+    
     
         
 }

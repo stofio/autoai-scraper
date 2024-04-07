@@ -29,11 +29,11 @@ $bulk = new BulkHandler();
                 </div>
                 <div>
                     <input type="radio" id="publish" name="post_status" value="publish">
-                    <label for="publish">Publish Immediately</label>
+                    <label for="publish">Publish</label>
                 </div>
                 <div>
                     <input type="radio" id="draft" name="post_status" value="draft">
-                    <label for="draft">Save as Draft</label>
+                    <label for="draft">Draft</label>
                 </div>
                 <div>
                     <input type="radio" id="schedule" name="post_status" value="schedule">

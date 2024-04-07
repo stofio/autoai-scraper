@@ -22,13 +22,14 @@ class clsManageRewriting {
     }
 
     public function generateContentWithAI($scrapedArticle, $source) {
-        $contentInChunks = $this->divideScrapedContentByChunks($scrapedArticle['content'], $source['_content_fetcher_splitting_words']);
+        $contentInChunks = $this->divideScrapedContentByChunks($scrapedArticle['content'], $source['_content_fetcher_splitting_words'][0]);
+
 
         $titleAndExcerpt = $this->rewriter->getRewrittenTitleAndExcerpt(["content" => $contentInChunks[0], "title" => $scrapedArticle['title']], $source['_content_fetcher_title_excerpt'][0]);
         if ($titleAndExcerpt === 'error') {
             return 'error';
         }
-
+        
         $rewrittenChunks = [];
         foreach ($contentInChunks as $chunk) {
             if (strpos($chunk, '<table') !== false) {
@@ -39,12 +40,14 @@ class clsManageRewriting {
                 $chunkWithPlaceholder = $this->addPlaceholderForImage($chunk);
                 $rewrWithPlaceholder = $this->rewriter->getRewrittenArticlePieceWithImage($chunkWithPlaceholder, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article'][0]);
                 $rewrWithImage = $this->reinsertImageOnPlaceholder($rewrWithPlaceholder, $imageString);
+                
                 array_push($rewrittenChunks, $rewrWithImage);
             } else {
                 $rewrWithoutImage = $this->rewriter->getRewrittenArticlePiece($chunk, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article'][0]);
                 array_push($rewrittenChunks, $rewrWithoutImage);
             }
         }
+
 
         $finalRewrittenContent = implode('', $rewrittenChunks);
 
@@ -88,7 +91,7 @@ class clsManageRewriting {
         $chunks = $this->createChunks($dom, $wordLimit);
         $chunks2 = $this->extractTables($chunks);
         $chunks3 = $this->splitChunksByImages($chunks2);
-
+        
         return $chunks3;
     }
 
@@ -98,6 +101,9 @@ class clsManageRewriting {
     private function createChunks($dom, $wordLimit) {
         $body = $dom->getElementsByTagName('body')->item(0);
         $childNodes = $body->childNodes;
+       //$childNodes = $dom->getElementsByTagName('*');
+
+
         $chunks = [];
         $currentChunk = '';
         $currentWordCount = 0;
@@ -144,7 +150,6 @@ class clsManageRewriting {
         if (!empty($currentChunk)) {
             $chunks[] = trim($currentChunk);
         }
-
         return $chunks;
     }
 
@@ -152,48 +157,55 @@ class clsManageRewriting {
      * Extracts tables from each chunk and places them into separate chunks.
      */
     private function extractTables($chunks) {
-        $chunksWithTables = [];
-
+        $newChunks = [];
         foreach ($chunks as $chunk) {
-            // Use DOMDocument to parse each chunk
-            $chunkDom = new DOMDocument();
-            // Load the HTML of the current chunk
-            @$chunkDom->loadHTML($chunk);
-            // Get all table elements in the current chunk
-            $tables = $chunkDom->getElementsByTagName('table');
+            
+            $dom = new DOMDocument();
+            $dom->loadHTML($chunk);
 
-            // If tables are found in the chunk, extract and add them to a new chunk
-            if ($tables->length > 0) {
-                // Initialize a new chunk to store extracted tables
-                $tableChunk = '';
-
-                // Iterate over tables and append them to the table chunk
-                foreach ($tables as $table) {
-                    // Append the HTML of the current table to the table chunk
-                    $tableChunk .= $chunkDom->saveHTML($table);
-                    // Remove the table from the current chunk
-                    $table->parentNode->removeChild($table);
-                }
-
-                // Add the table chunk to the result array
-                $chunksWithTables[] = $tableChunk;
+            if($dom->getElementsByTagName('table')->length > 0) {
+                $splittedChunks = $this->splitHtmlByTable($chunk); //returns array of chunks
+                $newChunks = array_merge($newChunks,$splittedChunks);
+               // my_log($splittedChunks);
             }
-
-            // Remove the HTML, body, and doctype tags from the remaining content of the chunk
-            $htmlWithoutTags = '';
-            $body = $chunkDom->getElementsByTagName('body')->item(0);
-            if ($body) {
-                // Get the inner HTML of the body element
-                foreach ($body->childNodes as $node) {
-                    $htmlWithoutTags .= $chunkDom->saveHTML($node);
-                }
+            else {
+                $newChunks[] = $chunk;
             }
-            // Add the remaining content of the chunk (without HTML, body, and doctype tags) to the result array
-            $chunksWithTables[] = $htmlWithoutTags;
         }
-
-        return $chunksWithTables;
+        //my_log($newChunks);
+        return $newChunks;
     }
+
+    private function splitHtmlByTable($htmlString) {
+        $dom = new DOMDocument();
+        $dom->loadHTML($htmlString);
+    
+        $result = [];
+        $currentGroup = '';
+    
+        foreach ($dom->getElementsByTagName('body')->item(0)->childNodes as $node) {
+            if ($node->nodeName === 'table') {
+                // If the node is a table, add the current group to the result
+                // and start a new group with the table
+                if (!empty($currentGroup)) {
+                    $result[] = $currentGroup;
+                    $currentGroup = '';
+                }
+                $result[] = $dom->saveHTML($node);
+            } else {
+                // For other nodes, append their HTML to the current group
+                $currentGroup .= $dom->saveHTML($node);
+            }
+        }
+    
+        // Add the remaining group to the result
+        if (!empty($currentGroup)) {
+            $result[] = $currentGroup;
+        }
+        
+        return $result;
+    }
+    
 
     /**
      * Splits chunks containing multiple images so that each chunk contains only one image.

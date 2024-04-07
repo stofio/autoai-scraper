@@ -200,7 +200,7 @@ function content_fetcher_ai_processing_callback($post) {
         <label>Title and excerpt: </label><br>
         <textarea name="promptTitleExcerpt"><?php echo esc_textarea($saved_title_excerpt); ?></textarea><br><br>
 
-        <label>Piece of article (or paragraph): </label><br>
+        <label>Article chunk: </label><br>
         <textarea name="promptPieceArticle"><?php echo esc_textarea($saved_piece_article); ?></textarea><br><br>
 
         <label>Table: </label><br>

@@ -2,6 +2,7 @@ jQuery(document).ready(function($) {
 
     window.onload = function() {
         handleDefaultCategories();
+        $('input[name="is_default_categories"]').trigger('click');
     };
 
     $('#submit-bulk-scrape').click(function(e) {

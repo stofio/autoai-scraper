@@ -41,6 +41,7 @@ class ScrapeAiMain {
 
     public function getScrapedData($sourceSettings, $url) {
         // Prepare args for scraping
+
         $websiteConfig = [
             'baseUrl' => $sourceSettings['_content_fetcher_scraping_url'][0],
             'selectors' => [
