@@ -40,7 +40,8 @@ class clsManageRewriting {
                 $chunkWithPlaceholder = $this->addPlaceholderForImage($chunk);
                 $rewrWithPlaceholder = $this->rewriter->getRewrittenArticlePieceWithImage($chunkWithPlaceholder, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article'][0]);
                 $rewrWithImage = $this->reinsertImageOnPlaceholder($rewrWithPlaceholder, $imageString);
-                array_push($rewrittenChunks, $rewrWithImage);
+                $rewrWithImageAndCaption = $this->insertImageCaption($rewrWithImage, $source['_content_fetcher_images_credit'][0]);
+                array_push($rewrittenChunks, $rewrWithImageAndCaption);
             } else {
                 $rewrWithoutImage = $this->rewriter->getRewrittenArticlePiece($chunk, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article'][0]);
                 array_push($rewrittenChunks, $rewrWithoutImage);
@@ -58,6 +59,30 @@ class clsManageRewriting {
         ];
     }
 
+    private function insertImageCaption($contentPiece, $caption) {
+        $crawler = new Crawler($contentPiece);
+    
+        $crawler->filter('img')->each(function (Crawler $image) use ($caption) {
+            $document = $image->getNode(0)->ownerDocument;
+    
+            $figure = $document->createElement('figure');
+            $figure->setAttribute('class', 'wp-caption');
+    
+            $figcaption = $document->createElement('figcaption');
+            $figcaption->setAttribute('class', 'wp-caption-text');
+            $figcaption->nodeValue = $caption;
+    
+            $imageNode = $image->getNode(0);
+            $parentNode = $imageNode->parentNode;
+    
+            $parentNode->insertBefore($figure, $imageNode);
+            $figure->appendChild($imageNode);
+            $figure->appendChild($figcaption);
+        });
+    
+        return $crawler->filterXPath('//body')->html();
+    }
+    
     private function extractFirstImageTag($contentPiece) {
         $pattern = '/<img[^>]+>/i';
         if (preg_match($pattern, $contentPiece, $matches)) {

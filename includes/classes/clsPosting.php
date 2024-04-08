@@ -15,7 +15,7 @@ class clsPosting {
                 throw new Exception('Content is empty, article cannot be created.');
             }
 
-            $newContent = $this->getAndDownloadImagesInNewContent($content);
+            $newContent = $this->getAndDownloadImagesInNewContent($content, $sourceSettings['_content_fetcher_images_credit'][0]);
             
             $article['content'] = $newContent;
 
@@ -37,7 +37,8 @@ class clsPosting {
             return false;
         }
     }
-    
+
+ 
     private function insertPost($article, $jobSettings, $sourceSettings) {
         //categories
         if(isset($jobSettings['isDefaultCategories'])) {
@@ -163,7 +164,7 @@ class clsPosting {
     }
     
     
-    private function getAndDownloadImagesInNewContent(&$content) {
+    private function getAndDownloadImagesInNewContent(&$content, $imgCaption) {
         $content = mb_convert_encoding('<?xml encoding="UTF-8">' . $content, 'UTF-8', 'auto');
         // Load the content into a DOMDocument for parsing
         $doc = new DOMDocument();
@@ -178,7 +179,7 @@ class clsPosting {
 
            // if(!isValidUrl($src)) continue;
 
-            $newUrl = $this->downloadAndUploadImage($src);
+            $newUrl = $this->downloadAndUploadImage($src, $imgCaption);
 
             if ($newUrl) {
                 // Replace the old src with the new URL
@@ -191,7 +192,7 @@ class clsPosting {
         return $content;
     }
     
-    private function downloadAndUploadImage($imageUrl) {
+    private function downloadAndUploadImage($imageUrl, $imgCaption) {
        if(!$this->isValidImageUrl($imageUrl)) return null;
 
         require_once(ABSPATH . 'wp-admin/includes/file.php');
@@ -213,16 +214,16 @@ class clsPosting {
             my_second_log('ERROR', 'Error in uploading image: ' . $upload['error']);
             return false;
         }
-    
         // Prepare an array for the attachment
         $wp_filetype = wp_check_filetype($filename, null);
         $attachment = array(
             'post_mime_type' => $wp_filetype['type'],
             'post_title' => sanitize_file_name($filename),
+            'post_excerpt' => $imgCaption,
             'post_content' => '',
             'post_status' => 'inherit'
         );
-    
+
         // Insert the attachment
         $attach_id = wp_insert_attachment($attachment, $upload['file']);
     
