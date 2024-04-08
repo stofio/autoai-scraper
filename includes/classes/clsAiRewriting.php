@@ -159,6 +159,7 @@ class OpenAIRewriting {
 	        $articlePrompt = $this->prepareDynamicPrompt('articlePiece', $dynamicParts);
 			
 	        $articlePieceResponseArray = $this->sendToOpenAI($articlePrompt);
+
 			
 	        if (json_last_error() !== JSON_ERROR_NONE ||
 			!isset($articlePieceResponseArray['choices'][0]['message']['content'])) {
@@ -188,10 +189,7 @@ class OpenAIRewriting {
 	        $articlePrompt = $this->prepareDynamicPrompt('articlePieceWithImage', $dynamicParts);
 
 			$maxRetries = 5;
-			//my_log('STAART');
 			for($i = 0; $i < $maxRetries; $i++) {
-
-				my_log('TRY ' . $i);
 				
 				$articlePieceResponseArray = $this->sendToOpenAI($articlePrompt);
 				$validated = $this->validateImagePlaceholder($articlePieceResponseArray['choices'][0]['message']['content']);
@@ -209,8 +207,6 @@ class OpenAIRewriting {
 	        return null;
 	    }
 	}
-
-	
 
 
     public function rewriteTable($table, $title, $userPrompt) {
@@ -245,31 +241,23 @@ class OpenAIRewriting {
 	    }
     }
 
-	private function checkImagePlaceholder($string) {
-		// Define the regular expression pattern
-		$pattern = '/^\[IMG_PLACEHOLDER\]$/';
-	
-		// Use preg_match to check if the pattern matches the string
-		if (preg_match($pattern, $string)) {
-			return true; // The string contains only [IMG_PLACEHOLDER]
-		} else {
-			return false; // The string does not match the pattern
-		}
-	}
-
 	//return false if placeholder not present, or return chunk if its wrong placed
 	private function validateImagePlaceholder($chunk) {
+		//my_log($chunk);
 		// check if and image tag is present into $chunk and replace it
 		$doc = new DOMDocument();
-		$doc->loadHTML($chunk);
+		$doc->loadHTML($chunk, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 		$images = $doc->getElementsByTagName('img');
 		if($images->length > 0) {
 			// Loop through images and replace with placeholder
 			foreach($images as $image) {
 				$placeholder = $doc->createTextNode('[IMG_PLACEHOLDER]');
-				$image->parentNode->replaceChild($placeholder, $image);
+				$image->parentNode->insertBefore($placeholder, $image); 
+				$image->parentNode->removeChild($image);
 			}
-			return $doc->saveXML();
+			
+			$res = $doc->saveHTML();
+			return $res;
 		}
 		
 		// Check if [IMG_PLACEHOLDER] exists in the chunk

@@ -22,8 +22,8 @@ class clsManageRewriting {
     }
 
     public function generateContentWithAI($scrapedArticle, $source) {
+        
         $contentInChunks = $this->divideScrapedContentByChunks($scrapedArticle['content'], $source['_content_fetcher_splitting_words'][0]);
-
 
         $titleAndExcerpt = $this->rewriter->getRewrittenTitleAndExcerpt(["content" => $contentInChunks[0], "title" => $scrapedArticle['title']], $source['_content_fetcher_title_excerpt'][0]);
         if ($titleAndExcerpt === 'error') {
@@ -40,14 +40,12 @@ class clsManageRewriting {
                 $chunkWithPlaceholder = $this->addPlaceholderForImage($chunk);
                 $rewrWithPlaceholder = $this->rewriter->getRewrittenArticlePieceWithImage($chunkWithPlaceholder, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article'][0]);
                 $rewrWithImage = $this->reinsertImageOnPlaceholder($rewrWithPlaceholder, $imageString);
-                
                 array_push($rewrittenChunks, $rewrWithImage);
             } else {
                 $rewrWithoutImage = $this->rewriter->getRewrittenArticlePiece($chunk, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article'][0]);
                 array_push($rewrittenChunks, $rewrWithoutImage);
             }
         }
-
 
         $finalRewrittenContent = implode('', $rewrittenChunks);
 
@@ -166,13 +164,11 @@ class clsManageRewriting {
             if($dom->getElementsByTagName('table')->length > 0) {
                 $splittedChunks = $this->splitHtmlByTable($chunk); //returns array of chunks
                 $newChunks = array_merge($newChunks,$splittedChunks);
-               // my_log($splittedChunks);
             }
             else {
                 $newChunks[] = $chunk;
             }
         }
-        //my_log($newChunks);
         return $newChunks;
     }
 

@@ -16,6 +16,7 @@ class clsPosting {
             }
 
             $newContent = $this->getAndDownloadImagesInNewContent($content);
+            
             $article['content'] = $newContent;
 
             $post_id = $this->insertPost($article, $jobSettings, $sourceSettings);
@@ -163,9 +164,11 @@ class clsPosting {
     
     
     private function getAndDownloadImagesInNewContent(&$content) {
+        $content = mb_convert_encoding('<?xml encoding="UTF-8">' . $content, 'UTF-8', 'auto');
         // Load the content into a DOMDocument for parsing
         $doc = new DOMDocument();
-        @$doc->loadHTML($content);
+        @$doc->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $doc->encoding = 'UTF-8';
     
         // Find all <img> tags
         $images = $doc->getElementsByTagName('img');
@@ -182,10 +185,9 @@ class clsPosting {
                 $img->setAttribute('src', $newUrl);
             }
         }
-    
         // Save the updated HTML content
-        $content = $doc->saveHTML();
-    
+        $content = mb_convert_encoding($doc->saveHTML(), 'UTF-8', 'HTML-ENTITIES');
+
         return $content;
     }
     

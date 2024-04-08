@@ -132,16 +132,13 @@ class ScrapaWebsite {
             $content3 = $this->simplifyImg($content2);
             $content4 = $this->reorderAndExtractImages($content3);
             $content5 = $this->removeHtmlComments($content4);
-            //$content5 = $this->removeEmptyElements($content4);//funct doesnt work
-
             $content6 = $this->checkImgsInclusion($content5, $config['getImages']);
-
-           //$content7 = $this->checkTablesInclusion($content6, $config['getTables']);
-           
+            $content7 = $this->checkTablesInclusion($content6, $config['getTables']);
+            $content8 = $this->removeEmptyElements($content7);
             
             return [
                 "title" => $title,
-                "content" => $content6,
+                "content" => $content8,
                 "img-url" => $imageUrl,
                 "img-credit" => $imageCredit,
                 "original-url" => $articleUrl
@@ -170,8 +167,19 @@ class ScrapaWebsite {
         else {
             return $content;
         }
-
    }
+
+    private function checkTablesInclusion($content, $isGetTables) {
+        if($isGetTables) {
+            return $content; 
+        }
+    
+        // Remove tables if $isGetTables is false
+        $pattern = '/<table[^>]*>(.*?)<\/table>/is'; 
+        $contentWithoutTables = preg_replace($pattern, '', $content);
+    
+        return $contentWithoutTables;
+    }
  
     private function isUrlScraped($url) {
         $scrapedUrlsFile = dirname(plugin_dir_path(__FILE__)) . '/scraped_urls.json'; // Update path as needed
@@ -463,36 +471,30 @@ class ScrapaWebsite {
         return $dom->saveHTML();
     }
 
-    private function removeAllBrTags($htmlString) {
-        // Replace all variations of <br> tags with an empty string
-        $cleanString = str_replace(['<br>', '<br/>', '<br />'], '', $htmlString);
 
-        return $cleanString;
-    }
-
-    function removeEmptyElements($htmlString) {
+    private function removeEmptyElements($htmlString) {
+        $htmlString = mb_convert_encoding('<?xml encoding="UTF-8">' . $htmlString, 'UTF-8', 'auto');
         $dom = new DOMDocument();
-        // Load the HTML string. Use @ to suppress errors caused by invalid HTML content.
+
         @$dom->loadHTML($htmlString, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-    
-        // Get all elements in the document.
-        $allElements = $dom->getElementsByTagName('*');
-    
-        // Since we're removing nodes while iterating, it's safer to iterate backwards.
-        for ($i = $allElements->length - 1; $i >= 0; $i--) {
-            $element = $allElements->item($i);
-    
-            // Check if the element is self-closing or allowed to be empty.
-            $selfClosing = in_array($element->tagName, ['img', 'br']);
-    
-            // If it's not a self-closing tag and does not have child nodes or text content, remove it.
-            if (!$selfClosing && !$element->hasChildNodes() && !trim($element->textContent)) {
-                $element->parentNode->removeChild($element);
+
+        $emptyPTags = $dom->getElementsByTagName('p');
+
+        for($i = $emptyPTags->length - 1; $i >= 0; $i--) {
+            $pTag = $emptyPTags->item($i);
+            if(trim($pTag->textContent) === '') {
+                $pTag->parentNode->removeChild($pTag); 
             }
         }
-    
-        // Save and return the modified HTML.
-        return $dom->saveHTML();
+
+        $brTags = $dom->getElementsByTagName('br');
+        for($i = $brTags->length - 1; $i >= 0; $i--) {
+            $brTag = $brTags->item($i);
+            $brTag->parentNode->removeChild($brTag);
+        }
+
+        return mb_convert_encoding($dom->saveHTML(), 'UTF-8', 'HTML-ENTITIES');
+
     }
 
 	private function removeSpecificTags($htmlString) {
