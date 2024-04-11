@@ -35,21 +35,21 @@ function content_fetcher_add_meta_boxes() {
         'default'
     );
 
-    // Content Handling and AI Processing
-    add_meta_box(
-        'content_fetcher_ai_processing', 
-        'Content Handling and AI Processing', 
-        'content_fetcher_ai_processing_callback', 
-        'sources_cpt', 
-        'normal', 
-        'default'
-    );
-
     // Scheduling and Publishing
     add_meta_box(
         'content_fetcher_scheduling_publishing', 
         'Scheduling and Publishing', 
         'content_fetcher_scheduling_publishing_callback', 
+        'sources_cpt', 
+        'normal', 
+        'default'
+    );
+
+    // Content Handling and AI Processing
+    add_meta_box(
+        'content_fetcher_ai_processing', 
+        'Content Handling and AI Processing', 
+        'content_fetcher_ai_processing_callback', 
         'sources_cpt', 
         'normal', 
         'default'
@@ -113,7 +113,6 @@ function content_fetcher_web_scraping_callback($post) {
     wp_nonce_field(plugin_basename(__FILE__), 'content_fetcher_nonce');
 
     $saved_base_url = get_post_meta($post->ID, '_content_fetcher_scraping_url', true);
-    $saved_cat_page_last_article = get_post_meta($post->ID, '_content_fetcher_category_last_article', true);
     $saved_title_selector = get_post_meta($post->ID, '_content_fetcher_title_selector', true);
     $saved_content_selector = get_post_meta($post->ID, '_content_fetcher_content_selector', true);
     $saved_image_url_selector = get_post_meta($post->ID, '_content_fetcher_image_url_selector', true);
@@ -124,13 +123,11 @@ function content_fetcher_web_scraping_callback($post) {
     <div>
 
         <div class="meta-box-inner">
-            <h3><b>Category page selector</b><img class="question-hint" id="hintCatPage" src="<?php echo plugins_url('../assets/question.svg', __FILE__); ?>" /></h3>
+            <h3><b>Source page</b><img class="question-hint" id="hintCatPage" src="<?php echo plugins_url('../assets/question.svg', __FILE__); ?>" /></h3>
 
-            <label>Category page URL: </label>
+            <label>URL: </label>
             <input type="text" name="baseUrl" placeholder="https://..." value="<?php echo esc_attr($saved_base_url); ?>"><br>
-
-            <label>Last article selector (takes first a href of the first article): </label>
-            <input type="text" name="catPageLastArticle" placeholder="CSS selector" value="<?php echo esc_attr($saved_cat_page_last_article); ?>"><br>             
+            
         </div>
 
         <div class="meta-box-inner">
@@ -157,6 +154,54 @@ function content_fetcher_web_scraping_callback($post) {
             <input type="text" id="test_source_url" name="test_source_url" placeholder="URL">
             <button id="testSourceButton" class="button">Test</button>
         </div>
+
+    </div>
+    <?php
+}
+
+
+function content_fetcher_scheduling_publishing_callback($post) {
+    wp_nonce_field(plugin_basename(__FILE__), 'content_fetcher_nonce');
+
+    $saved_cat_page_last_article = get_post_meta($post->ID, '_content_fetcher_category_last_article', true);
+    $saved_cat_page_list_container = get_post_meta($post->ID, '_content_fetcher_category_list_container', true);
+    $saved_run_daily = get_post_meta($post->ID, '_content_fetcher_run_daily', true);
+    //$saved_fetch_times = get_post_meta($post->ID, '_content_fetcher_fetch_times', true);
+    $saved_post_status = get_post_meta($post->ID, '_content_fetcher_post_status', true);
+
+    // Define the options for fetch times and post status
+    $fetch_times_options = [1, 2, 3, 10, 30];
+    $post_status_options = ['publish' => 'Publish', 'draft' => 'Draft'];
+
+    ?>
+    <div>
+
+        <h3><b>Schedule</b></h3>
+        <label>Run daily check 
+            <input type="checkbox" name="runDaily" <?php checked($saved_run_daily, '1'); ?> />
+        </label><br>
+        <div class="meta-box-inner">
+            <h4>Category page</h4>
+            <label>Articles list container: </label>
+            <input type="text" name="postsListContainer" placeholder="CSS selector" value="<?php echo esc_attr($saved_cat_page_list_container); ?>"><br> 
+            <label>Last article selector from source URL (the first a href of the first article): </label>
+            <input type="text" name="catPageLastArticleHref" placeholder="CSS selector" value="<?php echo esc_attr($saved_cat_page_last_article); ?>"><br> 
+            <button id="testCategoryButton" class="button">Test</button>
+        </div>
+        
+
+        <h3><b>Publishing</b></h3>
+
+        <label>After rewriting: </label>
+        <select name="selectPostStatus">
+            <?php foreach ($post_status_options as $value => $label): ?>
+                <option value="<?php echo esc_attr($value); ?>" 
+                    <?php selected($saved_post_status, $value); ?>>
+                    <?php echo esc_html($label); ?>
+                </option>
+            <?php endforeach; ?>
+        </select><br><br>
+
 
     </div>
     <?php
@@ -205,53 +250,6 @@ function content_fetcher_ai_processing_callback($post) {
 
         <label>Table: </label><br>
         <textarea name="promptTable"><?php echo esc_textarea($saved_table); ?></textarea><br><br>
-
-    </div>
-    <?php
-}
-
-function content_fetcher_scheduling_publishing_callback($post) {
-    wp_nonce_field(plugin_basename(__FILE__), 'content_fetcher_nonce');
-
-    $saved_run_daily = get_post_meta($post->ID, '_content_fetcher_run_daily', true);
-    $saved_fetch_times = get_post_meta($post->ID, '_content_fetcher_fetch_times', true);
-    $saved_post_status = get_post_meta($post->ID, '_content_fetcher_post_status', true);
-
-    // Define the options for fetch times and post status
-    $fetch_times_options = [1, 2, 3, 10, 30];
-    $post_status_options = ['publish' => 'Publish', 'draft' => 'Draft'];
-
-    ?>
-    <div>
-
-        <h3><b>Schedule</b></h3>
-
-        <label>Run daily check 
-            <input type="checkbox" name="runDaily" <?php checked($saved_run_daily, '1'); ?> />
-        </label><br>
-
-        <label>Fetch source times a day: </label>
-        <select name="selectFetchTimesADay">
-            <?php foreach ($fetch_times_options as $value): ?>
-                <option value="<?php echo esc_attr($value); ?>" 
-                    <?php selected($saved_fetch_times, $value); ?>>
-                    <?php echo esc_html($value); ?>
-                </option>
-            <?php endforeach; ?>
-        </select><br><br>
-
-        <h3><b>Publishing</b></h3>
-
-        <label>After rewriting: </label>
-        <select name="selectPostStatus">
-            <?php foreach ($post_status_options as $value => $label): ?>
-                <option value="<?php echo esc_attr($value); ?>" 
-                    <?php selected($saved_post_status, $value); ?>>
-                    <?php echo esc_html($label); ?>
-                </option>
-            <?php endforeach; ?>
-        </select><br><br>
-
 
     </div>
     <?php
@@ -344,8 +342,13 @@ function content_fetcher_save_source_meta($post_id) {
     }
 
     // Save Last Article href Selector
-    if (isset($_POST['catPageLastArticle'])) {
-        update_post_meta($post_id, '_content_fetcher_category_last_article', sanitize_text_field($_POST['catPageLastArticle']));
+    if (isset($_POST['catPageLastArticleHref'])) {
+        update_post_meta($post_id, '_content_fetcher_category_last_article', sanitize_text_field($_POST['catPageLastArticleHref']));
+    }
+
+    // Save Posts List Container
+    if (isset($_POST['postsListContainer'])) {
+        update_post_meta($post_id, '_content_fetcher_category_list_container', sanitize_text_field($_POST['postsListContainer']));
     }
 
     // Save Source Type
@@ -408,9 +411,9 @@ function content_fetcher_save_source_meta($post_id) {
     update_post_meta($post_id, '_content_fetcher_run_daily', $runDaily);
 
     // Save Fetch Source Times a Day
-    if (isset($_POST['selectFetchTimesADay'])) {
-        update_post_meta($post_id, '_content_fetcher_fetch_times', intval($_POST['selectFetchTimesADay']));
-    }
+    // if (isset($_POST['selectFetchTimesADay'])) {
+    //     update_post_meta($post_id, '_content_fetcher_fetch_times', intval($_POST['selectFetchTimesADay']));
+    // }
 
     // Save Post Status After Rewriting
     if (isset($_POST['selectPostStatus'])) {

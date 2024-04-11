@@ -123,12 +123,9 @@ The output should be a detailed, HTML-formatted text in {$lang} language that mi
 
         <label for="times_a_day_run_cron">Times a day per source to run automatic check</label><br>
         <select name="times_a_day_run_cron">
-            <option value="1" <?php if($times_a_day_run_cron == '1') echo 'selected';  ?>>1</option>
-            <option value="3" <?php if($times_a_day_run_cron == '3') echo 'selected';  ?>>3</option>
-            <option value="5" <?php if($times_a_day_run_cron == '5') echo 'selected';  ?>>5</option>
-            <option value="10" <?php if($times_a_day_run_cron == '10') echo 'selected';  ?>>10</option>
-            <option value="20" <?php if($times_a_day_run_cron == '20') echo 'selected';  ?>>20</option>
-            <option value="30" <?php if($times_a_day_run_cron == '30') echo 'selected';  ?>>30</option>
+            <option value="daily" <?php if($times_a_day_run_cron == 'daily') echo 'selected';  ?>>Daily</option>
+            <option value="twicedaily" <?php if($times_a_day_run_cron == 'twicedaily') echo 'selected';  ?>>Twicedaily</option>
+            <option value="hourly" <?php if($times_a_day_run_cron == 'hourly') echo 'selected';  ?>>Hourly</option>
         </select><br><br>
 
 

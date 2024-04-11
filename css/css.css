@@ -129,8 +129,8 @@ textarea {
     margin-top: 6px;
 }
 
-.meta-box-inner.test-url {
-    text-align: right;
+.meta-box-inner input {
+    width: 100%;
 }
 
 .question-hint {
@@ -154,7 +154,7 @@ textarea {
 #overlay-content {
     background-color: #fff;
     padding: 20px;
-    max-width: 80%;
+    max-width: 90%;
     max-height: 80%;
     overflow: auto;
 }

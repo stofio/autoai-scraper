@@ -37,6 +37,7 @@ class ScrapeAiMain {
         return $postUrl;
         
         //add to published
+        
     }
 
     public function getScrapedData($sourceSettings, $url) {

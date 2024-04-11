@@ -16,6 +16,7 @@ class ScrapaWebsite {
     // Constructor
     public function __construct() {
         require_once plugin_dir_path(__DIR__) . '../hQuery/hquery.php';
+        require_once plugin_dir_path(__DIR__) . '../includes/utilities.php';
     }
 
     /** example config array
@@ -33,51 +34,11 @@ class ScrapaWebsite {
     ];
      **/
 
-    public function scrapeCategoryPage($config) {
-
-    }
-
-    public function scrapeWebsite($config, $pageUrl = null) { //
+    public function scrapeWebsite($config, $articleUrl) { //
         try {
 
             $url = $config['baseUrl'];
             $selectors = $config['selectors'];
-
-
-            if(!$pageUrl) {
-
-                // Initial request to get the list of articles or the CATEGORY page
-                $doc = hQuery::fromUrl($url, ['Accept' => 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8']);
-                if (!$doc) {
-                    throw new Exception("Failed to load content from URL: $url");
-                }
-
-                $catPageLastArticle = $doc->find($selectors['catPageLastArticle']);
-
-                if (!$catPageLastArticle) {
-                    throw new Exception("Category page last article not found.");
-                }
-
-                $articleUrl = $config['directUrl'] ?? $catPageLastArticle->find('a')->attr('href');
-
-                // Validate URL
-                if (!filter_var($articleUrl, FILTER_VALIDATE_URL)) {
-                    throw new Exception("Invalid article URL: $articleUrl");
-                }
-
-                // Check if URL is already scraped
-                if ($this->isUrlScraped($articleUrl)) {
-                    my_second_log("INFO", "URL already scraped: " . $articleUrl);
-                    return null;
-                }
-            }
-            else {
-                // Validate URL
-                if (!filter_var($pageUrl, FILTER_VALIDATE_URL)) {
-                    throw new Exception("Invalid article URL: $pageUrl");
-                }
-                $articleUrl = $pageUrl;
-            }
 
              my_second_log('INFO', 'Getting article: ' . $articleUrl);
 
@@ -153,6 +114,21 @@ class ScrapaWebsite {
                 return "error";
             }
         }
+    }
+
+    public function scrapeCategoryPage($url, $listContainer, $firstArticleHref) {
+        // Initial request to get the list of articles or the CATEGORY page
+        $doc = hQuery::fromUrl($url, ['Accept' => 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8']);
+        if (!$doc) {
+            throw new Exception("Failed to load content from URL: $url");
+        }
+        // Extract article URLs 
+        $articleUrls = [];
+        foreach($doc->find($firstArticleHref) as $link) {
+          $articleUrls[] = $link->href; 
+        }
+
+        return $articleUrls;      
     }
 
     private function checkImgsInclusion($content, $isGetImages) {
@@ -505,6 +481,8 @@ class ScrapaWebsite {
 	    }
 	    return $htmlString;
 	}
+
+
 	
 
 }

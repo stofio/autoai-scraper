@@ -43,7 +43,6 @@ jQuery(document).ready(function($) {
                 imageUrl: imageUrl
             },
             success: function(response) {
-                console.log(response);
                 if (response.success) {
                     var scrapedData = response.data;
                     var content = `<div id="overlay-content">
@@ -67,6 +66,60 @@ jQuery(document).ready(function($) {
             },
             error: function() {
                 alert('Error fetching content');
+            }
+        });
+    });
+
+
+    $('#testCategoryButton').on('click', function(e) {
+        e.preventDefault();
+        var url = $('input[name="baseUrl"]').val();
+        var container = $('input[name="postsListContainer"]').val();
+        var href = $('input[name="catPageLastArticleHref"]').val();
+        
+        // AJAX request
+        $.ajax({
+            url: scrapeaiSingleSource.ajax_url,
+            type: 'post',
+            data: {
+                action: 'test_category',
+                nonce: scrapeaiSingleSource.nonce,
+                url: url,
+                container: container,
+                href: href
+            },
+            success: function(response) {
+                console.log(response);
+                if (response.success) {
+                    if(response.data.length === 0) {
+                        alert('No articles found. Please check the category URL and container selector.');
+                    } else {
+                        var articlesList = $('<ol></ol>');
+                        response.data.forEach(function(url) {
+                            articlesList.append(`<li><a href="${url}">${url}</a></li>`);
+                        });
+                        var content = `<div id="overlay-content">
+                            <ol>
+                                ${articlesList[0].innerHTML}
+                            </ol>
+                        </div>`;
+                        var overlay = $('<div id="overlay"></div>');
+                        var contentContainer = $('<div id="overlay-content"></div>');
+                        
+                        contentContainer.html(content);
+                        overlay.append(contentContainer);
+                        $('body').append(overlay);
+                        // Close the modal when overlay is clicked
+                        overlay.on('click', function() {
+                            $(this).remove();
+                        });
+                    }   
+                } else {
+                    alert('Error fetching category page');
+                }
+            },
+            error: function() {
+                alert('Error fetching category page');
             }
         });
     });

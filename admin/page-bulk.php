@@ -7,7 +7,6 @@ $bulk = new BulkHandler();
 
 <div class="wrap" id="autoai-bulk-scrape-form">
     <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
-    
         <h2>Enter URLs</h2>
         <p>(One URL per line, no empty spaces and no empty new-line)</p>
         <textarea name="urls" rows="10" class="large-text code"></textarea>

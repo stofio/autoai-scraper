@@ -9,12 +9,15 @@
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
 register_activation_hook(__FILE__, 'scrapeai_activate');
+register_deactivation_hook(__FILE__, 'deactivate_cron_job');
 
 add_action('init', 'register_all_ajax', 1);
 
 add_action('admin_enqueue_scripts', 'scrapeai_scripts', 20);
 
 add_action('init', 'register_source_cpt');
+
+add_action('init', 'init_scheduling');
 
 add_action('admin_menu', 'ai_scraper_custom_menu');
 
@@ -33,33 +36,56 @@ add_action('admin_init', 'save_cron_job_settings');
 add_action('wp', 'run_rewrite_post');
 
 
-// Add an action hook to handle the cron job
-add_action('autoai_cron_hook', 'run_auto_post_single_cron_job');
-
-
 function register_all_ajax() {
     if (is_admin()) {
         require_once plugin_dir_path(__FILE__) . 'admin/admin-includes/ajaxActions.php';
     }
 }
 
+function init_scheduling() {
+    require_once plugin_dir_path(__FILE__) . 'includes/classes/clsScheduling.php';
+    $Scheduling = new Scheduling();
+    add_action('scrape_content_event', array($Scheduling, 'scheduled_event_callback'));
+}
+
 function scrapeai_activate() {
+    //CREATE TABLE
     global $wpdb;
     $table_name = $wpdb->prefix . 'autoai_processed';
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
 
-    $charset_collate = $wpdb->get_charset_collate();
+        $charset_collate = $wpdb->get_charset_collate();
 
-    $sql = "CREATE TABLE $table_name (
-        id mediumint(9) NOT NULL AUTO_INCREMENT,
-        url varchar(255) NOT NULL,
-        status varchar(100) NOT NULL,
-        processed_on datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-        PRIMARY KEY  (id),
-        KEY url (url(191))
-    ) $charset_collate;";
+        $sql = "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            url varchar(255) NOT NULL,
+            status varchar(100) NOT NULL,
+            bulk_group int(9),
+            processed_on datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            new_post_id bigint(20) UNSIGNED,
+            PRIMARY KEY  (id),
+            KEY url (url(191)),
+            CONSTRAINT fk_new_post_id FOREIGN KEY (new_post_id) REFERENCES wp_posts(ID)
+        ) $charset_collate;";
 
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql);
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+    }
+}
+
+
+//remove cron job
+function deactivate_cron_job() {
+    $cron_jobs = _get_cron_array();    
+    foreach ($cron_jobs as $timestamp => $cron) {
+        foreach ($cron as $hook => $events) {
+            if ($hook === 'scrape_content_event') {
+                foreach ($events as $event) {
+                    wp_unschedule_event($timestamp, $hook, $event['args']);
+                }
+            }
+        }
+    }
 }
 
 
@@ -276,28 +302,6 @@ function run_rewrite_post() {
         require_once plugin_dir_path(__FILE__) . '/admin/admin-includes/rewrite_post.php';
     }
 }
-
-
-// Callback function to process each URL in the cron job
-function run_auto_post_single_cron_job($indexInSourceArray) {
-    require_once plugin_dir_path(__FILE__) . 'includes/main.php';
-    $sources = get_option('ai_scraper_websites', '');
-
-    my_log('CRON JOB N: ');
-    my_log($sources[$indexInSourceArray]);
-
-    runSingleAutoPost($sources[$indexInSourceArray]);
-    my_second_log('INFO', 'Cron job run for: ' . $sources[$indexInSourceArray]['baseUrl']);
-
-
-    $runTimeAndSourceUrl = array(
-        'last_run_time' => time(), 
-        'last_source_url' => $sources[$indexInSourceArray]['baseUrl']
-    );
-    update_option('autoai_last_cron_run', $runTimeAndSourceUrl);
-}
-
-
 
 
 
