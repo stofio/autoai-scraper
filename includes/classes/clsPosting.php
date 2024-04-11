@@ -17,6 +17,9 @@ class clsPosting {
 
             $newContent = $this->getAndDownloadImagesInNewContent($content, $sourceSettings['_content_fetcher_images_credit'][0]);
             
+            //add credits at the end of the article
+            $newContent .= "\n\n" . $sourceSettings['_content_fetcher_credits'][0];
+
             $article['content'] = $newContent;
 
             $post_id = $this->insertPost($article, $jobSettings, $sourceSettings);

@@ -17,9 +17,15 @@ class BulkHandler {
         
         require_once dirname(dirname(plugin_dir_path( __FILE__ ))) . '/includes/classes/clsMain.php';
         require_once dirname(dirname(plugin_dir_path( __FILE__ ))) . '/includes/classes/clsUrlProcessor.php';
+        require_once dirname(dirname(plugin_dir_path( __FILE__ ))) . '/includes/classes/clsScheduling.php';
+
+       // $a = new Scheduling();
+       // $a->scheduled_event_callback();
+       // return;
         
         $url = isset($_POST['url']) ? sanitize_text_field($_POST['url']) : '';        
         $jobSettings = $_POST['bulk_settings'];   
+        $jobSettings['job'] = 'bulk'; 
 
         $urlProc = new UrlProcessor();
         $source = $urlProc->getSourceIdByUrl($url);
@@ -30,6 +36,7 @@ class BulkHandler {
         }
 
         $sourceSettings = $urlProc->getSourceConfig($source->ID);
+        $sourceSettings['source_id'] = $source->ID;
         
         $main = new ScrapeAiMain();
         $postedUrl = $main->runScrapeRewriteAndPost($sourceSettings, $jobSettings, $url);

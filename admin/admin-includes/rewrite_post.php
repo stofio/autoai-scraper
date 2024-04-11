@@ -5,6 +5,41 @@ add_action('wp_footer', 'add_custom_js_to_footer');
 add_action('wp_before_admin_bar_render', 'add_custom_button_to_admin_bar');
 
 
+
+
+
+
+
+
+
+
+add_action('wp_ajax_rewrite_the_post', 'rewrite_the_post_callback');
+function rewrite_the_post_callback() {
+    // Get the data sent in the AJAX request
+    $original_url = $_POST['original_url'];
+    $post_id = $_POST['post_id'];
+
+    require_once plugin_dir_path(__FILE__) . '../../includes/main.php';
+
+    $theSource = getSourceByUrl($original_url);
+
+    rewritePostAndPost($theSource, $original_url, $post_id);
+    
+    // Send a response back to the JavaScript
+    wp_send_json_success('Rewriting completed successfully.');
+    
+    // Make sure to exit after sending the JSON response
+    exit();
+}
+
+
+
+
+
+
+
+
+
 // Add a button to the admin bar when viewing a single post
 function add_custom_button_to_admin_bar() {
     global $wp_admin_bar;

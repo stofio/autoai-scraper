@@ -34,11 +34,11 @@ class ScrapaWebsite {
     ];
      **/
 
-    public function scrapeWebsite($config, $articleUrl) { //
+    public function scrapeWebsite($sourceSettings, $articleUrl) { //
         try {
 
-            $url = $config['baseUrl'];
-            $selectors = $config['selectors'];
+            $url = $sourceSettings['baseUrl'];
+            $selectors = $sourceSettings['selectors'];
 
              my_second_log('INFO', 'Getting article: ' . $articleUrl);
 
@@ -83,7 +83,7 @@ class ScrapaWebsite {
                 }
             }
 
-            $imageCredit = $config['defaultImageCredit'] ?? "";
+            $imageCredit = $sourceSettings['defaultImageCredit'] ?? "";
 
             //clean scraped content
             $encodedContent = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
@@ -93,13 +93,15 @@ class ScrapaWebsite {
             $content3 = $this->simplifyImg($content2);
             $content4 = $this->reorderAndExtractImages($content3);
             $content5 = $this->removeHtmlComments($content4);
-            $content6 = $this->checkImgsInclusion($content5, $config['getImages']);
-            $content7 = $this->checkTablesInclusion($content6, $config['getTables']);
+            $content6 = $this->checkImgsInclusion($content5, $sourceSettings['getImages']);
+            $content7 = $this->checkTablesInclusion($content6, $sourceSettings['getTables']);
             $content8 = $this->removeEmptyElements($content7);
+            $content9 = $this->removeFirstImage($content8, $sourceSettings['excludeFirstImage']);
+
             
             return [
                 "title" => $title,
-                "content" => $content8,
+                "content" => $content9,
                 "img-url" => $imageUrl,
                 "img-credit" => $imageCredit,
                 "original-url" => $articleUrl
@@ -116,16 +118,20 @@ class ScrapaWebsite {
         }
     }
 
-    public function scrapeCategoryPage($url, $listContainer, $firstArticleHref) {
+    public function scrapeCategoryPage($catPageUrl, $listContainer, $firstArticleHref) {
         // Initial request to get the list of articles or the CATEGORY page
-        $doc = hQuery::fromUrl($url, ['Accept' => 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8']);
+        $doc = hQuery::fromUrl($catPageUrl, ['Accept' => 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8']);
         if (!$doc) {
-            throw new Exception("Failed to load content from URL: $url");
+            throw new Exception("Failed to load content from URL: $catPageUrl");
         }
-        // Extract article URLs 
+        
+        // Find the container element
+        $container = $doc->find($listContainer);
+
+        // Extract article URLs from within that container 
         $articleUrls = [];
-        foreach($doc->find($firstArticleHref) as $link) {
-          $articleUrls[] = $link->href; 
+        foreach($container->find($firstArticleHref) as $link) {
+            $articleUrls[] = $link->href;
         }
 
         return $articleUrls;      
@@ -469,8 +475,32 @@ class ScrapaWebsite {
             $brTag->parentNode->removeChild($brTag);
         }
 
-        return mb_convert_encoding($dom->saveHTML(), 'UTF-8', 'HTML-ENTITIES');
+        $html = $dom->saveHTML();
 
+        // Remove "<?xml encoding="UTF-8">" from the beginning of the string
+        $xmlDeclaration = '<?xml encoding="UTF-8">';
+        if (strpos($html, $xmlDeclaration) === 0) {
+            $html = substr($html, strlen($xmlDeclaration));
+        }
+
+        return mb_convert_encoding($html, 'UTF-8', 'HTML-ENTITIES');
+
+    }
+
+    private function removeFirstImage($htmlString, $toExclude) {
+        $dom = new DOMDocument();
+        @$dom->loadHTML($htmlString);
+      
+        $firstElement = $dom->getElementsByTagName('*')->item(0);
+      
+        if ($firstElement instanceof DOMElement && 
+            $firstElement->tagName == 'img' &&
+            !in_array($firstElement->getAttribute('src'), $toExclude)) {
+      
+          $firstElement->parentNode->removeChild($firstElement);
+        }
+      
+        return $dom->saveHTML();
     }
 
 	private function removeSpecificTags($htmlString) {
@@ -481,6 +511,8 @@ class ScrapaWebsite {
 	    }
 	    return $htmlString;
 	}
+
+
 
 
 	

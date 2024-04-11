@@ -13,7 +13,7 @@ class UrlProcessor {
         $this->table_name = $wpdb->prefix . 'autoai_processed';
     }
 
-    public function insert_processed_url($url, $status) {
+    public function insert_processed_url($url, $status, $job, $post_id, $sourceID, $original_url) {
         global $wpdb;
 
         $url = $this->normalize_url($url);
@@ -24,8 +24,9 @@ class UrlProcessor {
                 'url' => $url,
                 'status' => $status,
                 'processed_on' => current_time('mysql', 1),
-            ),
-            array('%s', '%s', '%s')
+                'new_post_id' => $post_id,
+                'source_id' => $sourceID
+            )
         );
     }
 
@@ -69,7 +70,6 @@ class UrlProcessor {
             array('%s')
         );
     }
-
 
     //get source closest to the given url or null
     public function getSourceIdByUrl($url) {
@@ -178,5 +178,7 @@ class UrlProcessor {
         }
         return $formattedUrl;
     }
+
+
     
 }

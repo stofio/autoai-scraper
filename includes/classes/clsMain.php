@@ -15,6 +15,7 @@ class ScrapeAiMain {
         require_once plugin_dir_path(__DIR__) . '../includes/classes/clsScrapeWebsite.php';
         require_once plugin_dir_path(__DIR__) . '../includes/classes/clsManageRewriting.php';
         require_once plugin_dir_path(__DIR__) . '../includes/classes/clsPosting.php';
+        require_once plugin_dir_path(__DIR__) . '../includes/classes/clsUrlProcessor.php';
     }
 
     public function runScrapeRewriteAndPost($sourceSettings, $jobSettings, $url) {
@@ -32,12 +33,20 @@ class ScrapeAiMain {
             return;
         }
 
-        $postUrl = $this->savePost($rewrittenArticle, $sourceSettings, $jobSettings); // return post_id or false
+        $postID = $this->savePost($rewrittenArticle, $sourceSettings, $jobSettings); // return post_id or false
+
+        $processor = new UrlProcessor();
+        if($postID) {
+            //add to published
+            $processor->insert_processed_url($url, 'posted', $jobSettings['job'], $postID, $sourceSettings['source_id']);
+        }
+        else {
+            //add to published
+            $processor->insert_processed_url($url, 'failed', $jobSettings['job'], '', $sourceSettings['source_id']);
+        }
         
-        return $postUrl;
-        
-        //add to published
-        
+        $post_url = get_permalink($postID);
+        return $post_url;
     }
 
     public function getScrapedData($sourceSettings, $url) {
@@ -55,6 +64,7 @@ class ScrapeAiMain {
             ],
             'getImages' => stripslashes($sourceSettings['_content_fetcher_get_images'][0]),
             'getTables' => stripslashes($sourceSettings['_content_fetcher_get_tables'][0]),
+            'excludeFirstImage' => stripslashes($sourceSettings['_content_fetcher_exclude_first_image'][0]),
             'defaultImageCredit' => stripslashes($sourceSettings['_content_fetcher_images_credit'][0])
         ];
 
@@ -93,7 +103,6 @@ class ScrapeAiMain {
         require_once plugin_dir_path(__DIR__) . '../includes/classes/clsPosting.php';
         $posting = new clsPosting();
         $post_id = $posting->createNewPost($aiGeneratedContent, $sourceSettings, $jobSettings); // Returns post_id or false
-        $post_url = get_permalink($post_id);
-        return $post_url;
+        return $post_id;
     }
 }

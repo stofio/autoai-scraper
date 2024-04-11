@@ -182,6 +182,7 @@ class clsManageRewriting {
     private function extractTables($chunks) {
         $newChunks = [];
         foreach ($chunks as $chunk) {
+            if(!$chunk) continue;
             
             $dom = new DOMDocument();
             $dom->loadHTML($chunk);

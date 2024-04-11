@@ -123,7 +123,8 @@ function content_fetcher_web_scraping_callback($post) {
     <div>
 
         <div class="meta-box-inner">
-            <h3><b>Source page</b><img class="question-hint" id="hintCatPage" src="<?php echo plugins_url('../assets/question.svg', __FILE__); ?>" /></h3>
+            <h3><b>Source page</b></h3>
+            <!-- <img class="question-hint" id="hintCatPage" src="<?php echo plugins_url('../assets/question.svg', __FILE__); ?>" /> -->
 
             <label>URL: </label>
             <input type="text" name="baseUrl" placeholder="https://..." value="<?php echo esc_attr($saved_base_url); ?>"><br>
@@ -166,6 +167,7 @@ function content_fetcher_scheduling_publishing_callback($post) {
     $saved_cat_page_last_article = get_post_meta($post->ID, '_content_fetcher_category_last_article', true);
     $saved_cat_page_list_container = get_post_meta($post->ID, '_content_fetcher_category_list_container', true);
     $saved_run_daily = get_post_meta($post->ID, '_content_fetcher_run_daily', true);
+    $saved_check_type = get_post_meta($post->ID, '_content_fetcher_check_type', true);
     //$saved_fetch_times = get_post_meta($post->ID, '_content_fetcher_fetch_times', true);
     $saved_post_status = get_post_meta($post->ID, '_content_fetcher_post_status', true);
 
@@ -177,9 +179,14 @@ function content_fetcher_scheduling_publishing_callback($post) {
     <div>
 
         <h3><b>Schedule</b></h3>
-        <label>Run daily check 
+        <label>Run daily check on category page 
             <input type="checkbox" name="runDaily" <?php checked($saved_run_daily, '1'); ?> />
-        </label><br>
+        </label><br><br>
+        <label>Check: </label>
+        <select name="selectCheckType">
+            <option value="all" <?php echo ($saved_check_type == 'all') ? 'selected' : ''; ?>>All articles</option>
+            <option value="last" <?php echo ($saved_check_type == 'last') ? 'selected' : ''; ?> >Only last article</option>
+        </select><br><br>
         <div class="meta-box-inner">
             <h4>Category page</h4>
             <label>Articles list container: </label>
@@ -258,8 +265,11 @@ function content_fetcher_ai_processing_callback($post) {
 function content_fetcher_miscellaneous_callback($post) {
     wp_nonce_field(plugin_basename(__FILE__), 'content_fetcher_nonce');
 
-    $saved_get_images = get_post_meta($post->ID, '_content_fetcher_get_images', true);
     $saved_get_tables = get_post_meta($post->ID, '_content_fetcher_get_tables', true);
+    $saved_get_images = get_post_meta($post->ID, '_content_fetcher_get_images', true);
+    $saved_exclude_first_image = get_post_meta($post->ID, '_content_fetcher_exclude_first_image', true);
+    $saved_credits = get_post_meta($post->ID, '_content_fetcher_credits', true);
+    
     $saved_images_credit = get_post_meta($post->ID, '_content_fetcher_images_credit', true);
 
     ?>
@@ -275,8 +285,30 @@ function content_fetcher_miscellaneous_callback($post) {
             <input type="checkbox" name="toGetImages" <?php echo ($saved_get_images === '1' || $saved_get_images === '') ? 'checked' : ''; ?> />
         </label><br><br>
 
+        <label>Exclude first image from content (avoid duplicated featured image) 
+            <input type="checkbox" name="excludeFirstImage" <?php echo ($saved_exclude_first_image === '1' || $saved_exclude_first_image === '') ? 'checked' : ''; ?> />
+        </label><br><br>
+
         <label>Custom image caption: </label>
         <input type="text" name="imagesCredit" placeholder="image credits" value="<?php echo esc_attr($saved_images_credit); ?>"><br><br>
+
+        <label>Credits after article body: </label>
+        <?php
+            wp_editor( 
+                $saved_credits, 
+                'credits', 
+                [
+                    'textarea_name' => 'credits',
+                    'teeny' => false, 
+                    'media_buttons' => false,
+                    'tinymce' => [
+                        'toolbar1' => 'bold,italic,link',
+                    ],
+                    'wpautop' => true, 
+                ]
+            );
+        ?>
+        
 
         
     </div>
@@ -289,7 +321,8 @@ function content_fetcher_category_callback($post) {
     //get all post categories
      $categories = get_categories( array(
         'orderby' => 'name',
-        'order'   => 'ASC'
+        'order'   => 'ASC',
+        'hide_empty'=> false
     ) );
 
     // Retrieve saved category data
@@ -410,6 +443,11 @@ function content_fetcher_save_source_meta($post_id) {
     $runDaily = isset($_POST['runDaily']) ? '1' : '0';
     update_post_meta($post_id, '_content_fetcher_run_daily', $runDaily);
 
+    // Save Check Type
+    if (isset($_POST['selectCheckType'])) {
+        update_post_meta($post_id, '_content_fetcher_check_type', sanitize_textarea_field($_POST['selectCheckType']));
+    }
+
     // Save Fetch Source Times a Day
     // if (isset($_POST['selectFetchTimesADay'])) {
     //     update_post_meta($post_id, '_content_fetcher_fetch_times', intval($_POST['selectFetchTimesADay']));
@@ -424,9 +462,18 @@ function content_fetcher_save_source_meta($post_id) {
     $toGetImages = isset($_POST['toGetImages']) ? '1' : '0';
     update_post_meta($post_id, '_content_fetcher_get_images', $toGetImages);
 
-    // Save Images Credit
+    // Save Get Images
+    $excludeFirstImage = isset($_POST['excludeFirstImage']) ? '1' : '0';
+    update_post_meta($post_id, '_content_fetcher_exclude_first_image', $excludeFirstImage);
+
+    // Save Credit
+    if (isset($_POST['credits'])) {
+        update_post_meta($post_id, '_content_fetcher_credits', $_POST['credits']);
+    }
+
+    // Save Images Caption
     if (isset($_POST['imagesCredit'])) {
-        update_post_meta($post_id, '_content_fetcher_images_credit', sanitize_text_field($_POST['imagesCredit']));
+        update_post_meta($post_id, '_content_fetcher_images_credit', $_POST['imagesCredit']);
     }
 
     // Save Get Tables
