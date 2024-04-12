@@ -124,4 +124,40 @@ jQuery(document).ready(function($) {
         });
     });
 
+    //
+    $('#seeChunkFullPrompt').on('click', function() {
+        //get prompt
+        $.ajax({
+            url: scrapeaiSingleSource.ajax_url,
+            type: 'post',
+            data: {
+                action: 'display_full_prompt',
+                nonce: scrapeaiSingleSource.nonce
+            },
+            success: function(response) {
+                console.log(response);
+                
+                var overlay = $('<div id="overlay"></div>');
+                var contentContainer = $('<div id="overlay-content"></div>');
+                const div = document.createElement('div');
+
+                response.data.split('\n').forEach(line => {
+                    div.appendChild(document.createTextNode(line));
+                    div.appendChild(document.createElement('br')); 
+                  });
+
+                contentContainer.html(div);
+                overlay.append(contentContainer);
+                $('body').append(overlay);
+                // Close the modal when overlay is clicked
+                overlay.on('click', function() {
+                    $(this).remove();
+                });
+                
+            }
+        });
+
+        
+    });
+
 });

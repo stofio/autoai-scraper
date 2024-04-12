@@ -32,12 +32,11 @@ class UrlProcessor {
 
     public function get_processed_url($url) {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'autoai_processed';
         
         // Normalize the URL
         $url = $this->normalize_url($url);
     
-        $query = $wpdb->prepare("SELECT * FROM $table_name WHERE url = %s", $url);
+        $query = $wpdb->prepare("SELECT * FROM $this->table_name WHERE url = %s", $url);
         return $wpdb->get_row($query);
     }
 
@@ -57,17 +56,12 @@ class UrlProcessor {
         );
     }
 
-    public function delete_processed_url($url) {
+    public function delete_processed($id) {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'autoai_processed';
-        
-        // Normalize the URL
-        $url = $this->normalize_url($url);
     
         $wpdb->delete(
-            $table_name,
-            array('url' => $url),
-            array('%s')
+            $this->table_name,
+            array('id' => $id)
         );
     }
 

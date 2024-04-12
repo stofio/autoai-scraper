@@ -19,7 +19,15 @@ class ScrapeAiMain {
     }
 
     public function runScrapeRewriteAndPost($sourceSettings, $jobSettings, $url) {
+        
+        $processor = new UrlProcessor();
+
         //check if url is published/pending
+        $processed = $processor->get_processed_url($url);
+        if($processed && $processed->status == 'posted') {
+            my_second_log('ERROR', 'URL skipped, already posted with ID = ' . $processed->new_post_id);
+            return;
+        }
         
         $scrapedArticle = $this->getScrapedData($sourceSettings, $url);
 
@@ -35,7 +43,6 @@ class ScrapeAiMain {
 
         $postID = $this->savePost($rewrittenArticle, $sourceSettings, $jobSettings); // return post_id or false
 
-        $processor = new UrlProcessor();
         if($postID) {
             //add to published
             $processor->insert_processed_url($url, 'posted', $jobSettings['job'], $postID, $sourceSettings['source_id']);
@@ -74,7 +81,7 @@ class ScrapeAiMain {
 
 
     private function getAiRewritten($scrapedArticle, $source) {
-        $rewritingManager = new clsManageRewriting();
+        $rewritingManager = new clsManageRewriting($source['_content_fetcher_ai_model'][0]);
         $aiGeneratedContent = $rewritingManager->generateContentWithAI($scrapedArticle, $source);
 
         if (strlen($aiGeneratedContent['content']) < 500) {

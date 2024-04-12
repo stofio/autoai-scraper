@@ -488,8 +488,9 @@ class ScrapaWebsite {
     }
 
     private function removeFirstImage($htmlString, $toExclude) {
+        $htmlString = mb_convert_encoding('<?xml encoding="UTF-8">' . $htmlString, 'UTF-8', 'auto');
         $dom = new DOMDocument();
-        @$dom->loadHTML($htmlString);
+        @$dom->loadHTML($htmlString, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
       
         $firstElement = $dom->getElementsByTagName('*')->item(0);
       
@@ -499,8 +500,17 @@ class ScrapaWebsite {
       
           $firstElement->parentNode->removeChild($firstElement);
         }
+
+        $html = $dom->saveHTML();
+
+        // Remove "<?xml encoding="UTF-8">" from the beginning of the string
+        $xmlDeclaration = '<?xml encoding="UTF-8">';
+        if (strpos($html, $xmlDeclaration) === 0) {
+            $html = substr($html, strlen($xmlDeclaration));
+        }
+
+        return mb_convert_encoding($html, 'UTF-8', 'HTML-ENTITIES');
       
-        return $dom->saveHTML();
     }
 
 	private function removeSpecificTags($htmlString) {

@@ -16,9 +16,9 @@ class clsManageRewriting {
     private $apiKey;
     private $rewriter;
 
-    public function __construct() {
+    public function __construct($aiModel) {
         $this->apiKey = get_option('open_ai_key_option');
-        $this->rewriter = new OpenAIRewriting();
+        $this->rewriter = new OpenAIRewriting($aiModel);
     }
 
     public function generateContentWithAI($scrapedArticle, $source) {
@@ -38,12 +38,12 @@ class clsManageRewriting {
             } elseif (strpos($chunk, '<img') !== false) {
                 $imageString = $this->extractFirstImageTag($chunk);
                 $chunkWithPlaceholder = $this->addPlaceholderForImage($chunk);
-                $rewrWithPlaceholder = $this->rewriter->getRewrittenArticlePieceWithImage($chunkWithPlaceholder, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article'][0]);
+                $rewrWithPlaceholder = $this->rewriter->getRewrittenArticlePieceWithImage($chunkWithPlaceholder, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article_before'][0], $source['_content_fetcher_piece_article_after'][0]);
                 $rewrWithImage = $this->reinsertImageOnPlaceholder($rewrWithPlaceholder, $imageString);
                 $rewrWithImageAndCaption = $this->insertImageCaption($rewrWithImage, $source['_content_fetcher_images_credit'][0]);
                 array_push($rewrittenChunks, $rewrWithImageAndCaption);
             } else {
-                $rewrWithoutImage = $this->rewriter->getRewrittenArticlePiece($chunk, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article'][0]);
+                $rewrWithoutImage = $this->rewriter->getRewrittenArticlePiece($chunk, $titleAndExcerpt['title'], $source['_content_fetcher_piece_article_before'][0], $source['_content_fetcher_piece_article_after'][0]);
                 array_push($rewrittenChunks, $rewrWithoutImage);
             }
         }

@@ -18,9 +18,9 @@ class OpenAIRewriting {
 
 	private $promptTemplates;
 
-    public function __construct() {
+    public function __construct($aiModel) {
         $this->openAIApiKey = get_option('open_ai_key_option');
-        $this->openAiModel = get_option('open_ai_model', 'gpt-3.5-turbo');
+        $this->openAiModel = $aiModel;
         $this->language = get_option('autoai_output_language', 'English');
 
 		$this->promptTemplates = [
@@ -42,18 +42,24 @@ class OpenAIRewriting {
 			],
 			'articlePiece' => [
 				'template' => <<<EOT
-					Rewrite this content piece in {$this->language}:
+					Rewrite this content piece in {$this->language}.
+					{userPromptBefore}
+					Content to rewrite:
 					Article title: '{title}',
 					Content piece: '{content}',
-					User Instructions: '{userPrompt}'. Return only the content rewritten in html elements without title.
+					Rewriting Instructions: {userPromptAfter}. 
+					Return only the content rewritten in html elements without title.
 				EOT
 			],
 			'articlePieceWithImage' => [
 				'template' => <<<EOT
-					Rewrite this content piece in {$this->language}. [IMG_PLACEHOLDER] represents an image tag <img/>.:
+					Rewrite this content piece in {$this->language}. 
+					{userPromptBefore}
+					[IMG_PLACEHOLDER] represents an image tag <img/>. 
+					Content to rewrite:
 					Article title: '{title}',
 					Content piece: '{content}',
-					Rewriting instructions: '{userPrompt}'. 
+					Rewriting instructions: {userPromptAfter}. 
 					Return only the content rewritten in html elements without title, reinsert [IMG_PLACEHOLDER] in the content.
 				EOT
 			],
@@ -144,7 +150,7 @@ class OpenAIRewriting {
 	    }
 	}
 
-	public function getRewrittenArticlePiece($contentPart, $title, $userPrompt) {
+	public function getRewrittenArticlePiece($contentPart, $title, $userPromptBefore, $userPromptAfter) {
 	    try {
 	        if (empty($contentPart) || empty($title)) {
 	            throw new Exception('Invalid input array in getRewrittenArticlePiece');
@@ -153,10 +159,12 @@ class OpenAIRewriting {
 	        $dynamicParts = [
                 'title' => $title,
                 'content' => $contentPart,
-                'userPrompt' => $userPrompt
+                'userPromptBefore' => $userPromptBefore,
+                'userPromptAfter' => $userPromptAfter,
             ];
 
 	        $articlePrompt = $this->prepareDynamicPrompt('articlePiece', $dynamicParts);
+
 			
 	        $articlePieceResponseArray = $this->sendToOpenAI($articlePrompt);
 
@@ -174,7 +182,7 @@ class OpenAIRewriting {
 	    }
 	}
 
-	public function getRewrittenArticlePieceWithImage($contentPart, $title, $userPrompt) {
+	public function getRewrittenArticlePieceWithImage($contentPart, $title, $userPromptBefore, $userPromptAfter) {
 	    try {
 	        if (empty($contentPart) || empty($title)) {
 	            throw new Exception('Invalid input array in getRewrittenArticlePieceWithImage');
@@ -183,7 +191,8 @@ class OpenAIRewriting {
 	        $dynamicParts = [
 				'title' => $title,
                 'content' => $contentPart,
-                'userPrompt' => $userPrompt
+                'userPromptBefore' => $userPromptBefore,
+                'userPromptAfter' => $userPromptAfter,
             ];
 			
 	        $articlePrompt = $this->prepareDynamicPrompt('articlePieceWithImage', $dynamicParts);
@@ -267,6 +276,10 @@ class OpenAIRewriting {
 
 		// Either [IMG_PLACEHOLDER] doesn't exist or it's inside src="", return false
 		return false;
+	}
+
+	public function getChunkFullPrompt() {
+		return $this->promptTemplates['articlePiece']['template'];
 	}
 
 

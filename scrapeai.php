@@ -17,9 +17,11 @@ add_action('admin_enqueue_scripts', 'scrapeai_scripts', 20);
 
 add_action('init', 'register_source_cpt');
 
+
 add_action('init', 'init_scheduling');
 
 add_action('admin_menu', 'ai_scraper_custom_menu');
+add_action( 'admin_menu', 'modify_sources_submenu_link' );
 
 //settings page
 add_action('admin_init', 'save_scrapeai_settings');
@@ -88,7 +90,7 @@ function scrapeai_scripts() {
         $screen = get_current_screen();
 
        // Check if on your plugin's pages
-       $allowed_pages = array('ai-auto-post', 'autoai-from-url', 'autoai-sources', 'autoai-settings', 'scrapeai-bulk'); // Add your submenu pages here
+       $allowed_pages = array('ai-auto-post', 'scrapeai-bulk', 'scrapeai-processed', 'autoai-settings'); // submenu pages 
        if (in_array($pagenow, $allowed_pages) || (isset($_GET['page']) && in_array($_GET['page'], $allowed_pages)) || $screen->post_type === 'sources_cpt') {
             wp_enqueue_script('jquery');
             wp_enqueue_script('ai-rewriter-script', plugins_url('/js/js.js', __FILE__), array( 
@@ -98,6 +100,15 @@ function scrapeai_scripts() {
             wp_enqueue_style('ai-rewriter-style', plugins_url('/css/css.css', __FILE__));
         }
         
+
+        if ($screen && $screen->post_type === 'sources_cpt' && $screen->base === 'post') {
+            wp_enqueue_script('scrapeai-source-script', plugin_dir_url(__FILE__) . '/admin/js/single-source.js', array('jquery'), null, true);
+            wp_localize_script('scrapeai-source-script', 'scrapeaiSingleSource', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('scrapeai_single_source_nonce'),
+            ));
+        }
+
         if ($pagenow === 'admin.php' && isset($_GET['page']) && $_GET['page'] === 'scrapeai-bulk') {
             wp_enqueue_script('scrapeai-bulk-scrape', plugin_dir_url(__FILE__) . '/admin/js/page-bulk.js', array('jquery'), null, true);
             wp_localize_script('scrapeai-bulk-scrape', 'scrapeaiBulkScrape', array(
@@ -106,11 +117,11 @@ function scrapeai_scripts() {
             ));
         }
 
-        if ($screen && $screen->post_type === 'sources_cpt' && $screen->base === 'post') {
-            wp_enqueue_script('scrapeai-source-script', plugin_dir_url(__FILE__) . '/admin/js/single-source.js', array('jquery'), null, true);
-            wp_localize_script('scrapeai-source-script', 'scrapeaiSingleSource', array(
+        if ($pagenow === 'admin.php' && isset($_GET['page']) && $_GET['page'] === 'scrapeai-processed') {
+            wp_enqueue_script('scrapeai-processed', plugin_dir_url(__FILE__) . '/admin/js/page-processed.js', array('jquery'), null, true);
+            wp_localize_script('scrapeai-processed', 'scrapeaiProcessed', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('scrapeai_single_source_nonce'),
+                'nonce' => wp_create_nonce('scrapeai_delete_processed_nonce'),
             ));
         }
     }
@@ -138,7 +149,8 @@ function register_source_cpt() {
         'labels' => $labels,
         'public' => true,
         'label'  => 'Sources',
-        'supports' => array('title')
+        'supports' => array('title'),
+        'show_in_menu' => false,
     );
     register_post_type('sources_cpt', $args);
     include_once plugin_dir_path(__FILE__) . 'includes/sources.php';
@@ -148,18 +160,46 @@ function register_source_cpt() {
 function ai_scraper_custom_menu() {
     // Add the top-level menu item
     add_menu_page(
-        'AI Auto Rewrite',         // Page title
-        'AI Auto Rewrite',         // Menu title
+        'AI Rewriter',         // Page title
+        'AI Rewriter',         // Menu title
         'manage_options',          // Capability required
-        'ai-auto-post',     // Menu slug
-        'ai_auto_post_page',     // Function to display the dashboard page
+        'autoai-settings',     // Menu slug
+        'autoai_settings_page',     // Function to display the dashboard page
         'dashicons-admin-site-alt3', // Icon for the menu (WordPress Dashicon)
         6                           // Position in the menu (optional)
     );
 
+    add_submenu_page(
+        'autoai-settings',     // Parent slug
+        'Sources',                  // Page title
+        'Sources',                  // Menu title
+        'manage_options',           // Capability required
+        'scrapeai-sources',             // Menu slug
+        'autoai__' // Function to display the page
+    );
+
+
+    add_submenu_page(
+        'autoai-settings',     // Parent slug
+        'Bulk',                  // Page title
+        'Bulk',                  // Menu title
+        'manage_options',           // Capability required
+        'scrapeai-bulk',             // Menu slug
+        'autoai_bulk_page' // Function to display the page
+    );
+
+    add_submenu_page(
+        'autoai-settings',
+        'Processed', 
+        'Processed',
+        'manage_options',
+        'scrapeai-processed',
+        'autoai_processed_page'
+    );
+
     // Add 'Logs' submenu
     // add_submenu_page(
-    //     'ai-auto-post',
+    //     'autoai-settings',
     //     'Logs',
     //     'Logs',
     //     'manage_options',
@@ -168,38 +208,39 @@ function ai_scraper_custom_menu() {
     // );
 
 
-    add_submenu_page(
-        'ai-auto-post',     // Parent slug
-        'Bulk',                  // Page title
-        'Bulk',                  // Menu title
-        'manage_options',           // Capability required
-        'scrapeai-bulk',             // Menu slug
-        'autoai_bulk_page' // Function to display the page
-    );
-
-    // Add 'Settings' submenu
-    add_submenu_page(
-        'ai-auto-post',
-        'Settings',
-        'Settings',
-        'manage_options',
-        'autoai-settings',
-        'autoai_settings_page'
-    );
-
 }
 
+function modify_sources_submenu_link() {
+    global $submenu;
+
+    // Check if the parent menu slug 'ai-auto-post' exists
+    if ( isset( $submenu['autoai-settings'] ) ) {
+        // Loop through the submenu items of 'autoai-settings'
+        foreach ( $submenu['autoai-settings'] as $key => $item ) {
+            // Check if the submenu item slug is 'scrapeai-sources'
+            if ( $item[2] === 'scrapeai-sources' ) {
+                // Modify the URL to point to the edit.php page for your custom post type
+                $submenu['autoai-settings'][$key][2] = 'edit.php?post_type=sources_cpt';
+                break;
+            }
+        }
+    }
+}
 
 function ai_auto_post_page() {
     require_once plugin_dir_path(__FILE__) . '/admin/page-auto-post.php';
 }
 
-function autoai_settings_page() {
-    require_once plugin_dir_path(__FILE__) . '/admin/page-settings.php';
-}
-
 function autoai_bulk_page() {
     require_once plugin_dir_path(__FILE__) . '/admin/page-bulk.php';
+}
+
+function autoai_processed_page() {
+    require_once plugin_dir_path(__FILE__) . '/admin/page-processed.php';
+}
+
+function autoai_settings_page() {
+    require_once plugin_dir_path(__FILE__) . '/admin/page-settings.php';
 }
 
 

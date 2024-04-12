@@ -217,10 +217,12 @@ function content_fetcher_scheduling_publishing_callback($post) {
 function content_fetcher_ai_processing_callback($post) {
     wp_nonce_field(plugin_basename(__FILE__), 'content_fetcher_nonce');
 
+    $saved_ai_model = get_post_meta($post->ID, '_content_fetcher_ai_model', true);
     $saved_splitting_type = get_post_meta($post->ID, '_content_fetcher_splitting_type', true);
     $saved_splitting_words = get_post_meta($post->ID, '_content_fetcher_splitting_words', true);
     $saved_title_excerpt = get_post_meta($post->ID, '_content_fetcher_title_excerpt', true);
-    $saved_piece_article = get_post_meta($post->ID, '_content_fetcher_piece_article', true);
+    $saved_piece_article_before = get_post_meta($post->ID, '_content_fetcher_piece_article_before', true);
+    $saved_piece_article_after = get_post_meta($post->ID, '_content_fetcher_piece_article_after', true);
     $saved_table = get_post_meta($post->ID, '_content_fetcher_table', true);
 
     $splitting_types = [
@@ -233,6 +235,13 @@ function content_fetcher_ai_processing_callback($post) {
 
         <h3><b>AI rewriting settings</b></h3>
 
+        <label>OpenAI API Model: </label>
+        <select name="aiModel">
+            <option value="gpt-3.5-turbo" <?php if($saved_ai_model == 'gpt-3.5-turbo') echo 'selected'  ?>>gpt-3.5-turbo</option>
+            <option value="gpt-3.5-turbo-16k" <?php if($saved_ai_model == 'gpt-3.5-turbo-16k') echo 'selected'  ?>>gpt-3.5-turbo-16k</option>
+            <option value="gpt-4.0" <?php if($saved_ai_model == 'gpt-4.0') echo 'selected'  ?>>gpt-4 (NOTE: expensive)</option>
+        </select><br><br>
+
         <!-- <label>Content splitting: </label>
         <select name="selectSplittingType">
             <?php //foreach ($splitting_types as $value => $label): ?>
@@ -243,20 +252,26 @@ function content_fetcher_ai_processing_callback($post) {
             <?php //endforeach; ?>
         </select><br><br> -->
 
-        <label>Max words per chunk (aprox.): </label>
-        <input type="number" name="maxChunkWords" min="20" max="3000" value="<?php echo $saved_splitting_words ? esc_attr($saved_splitting_words) : 300 ?>"><br><br>
-
-
         <h3><b>Prompts instructions</b></h3>
 
         <label>Title and excerpt: </label><br>
         <textarea name="promptTitleExcerpt"><?php echo esc_textarea($saved_title_excerpt); ?></textarea><br><br>
-
-        <label>Article chunk: </label><br>
-        <textarea name="promptPieceArticle"><?php echo esc_textarea($saved_piece_article); ?></textarea><br><br>
-
         <label>Table: </label><br>
         <textarea name="promptTable"><?php echo esc_textarea($saved_table); ?></textarea><br><br>
+
+        <div class="meta-box-inner">
+            <h4>Instructions for chunks prompt</h4>
+            <label>Max words per chunk (aprox.): </label>
+            <input type="number" name="maxChunkWords" min="20" max="3000" value="<?php echo $saved_splitting_words ? esc_attr($saved_splitting_words) : 300 ?>"><br><br>
+
+            <p>Adds instructions before and after the given chunk in the prompt, for more control. <a id="seeChunkFullPrompt" href="javascript:void(0);">See full prompt</a> </p>
+            <label>Before given chunk: </label><br>
+            <textarea name="promptPieceArticleBefore"><?php echo esc_textarea($saved_piece_article_before); ?></textarea><br><br>
+            <label>After given chunk: </label><br>
+            <textarea name="promptPieceArticleAfter"><?php echo esc_textarea($saved_piece_article_after); ?></textarea><br><br>
+        </div>
+
+        
 
     </div>
     <?php
@@ -414,6 +429,11 @@ function content_fetcher_save_source_meta($post_id) {
         update_post_meta($post_id, '_content_fetcher_article_type_text', sanitize_text_field($_POST['newsLabelText']));
     }
 
+    // Save AI Model
+    if (isset($_POST['aiModel'])) {
+        update_post_meta($post_id, '_content_fetcher_ai_model', sanitize_text_field($_POST['aiModel']));
+    }
+
     // Save Content Splitting Type
     // if (isset($_POST['selectSplittingType'])) {
     //     update_post_meta($post_id, '_content_fetcher_splitting_type', sanitize_text_field($_POST['selectSplittingType']));
@@ -429,9 +449,14 @@ function content_fetcher_save_source_meta($post_id) {
         update_post_meta($post_id, '_content_fetcher_title_excerpt', sanitize_textarea_field($_POST['promptTitleExcerpt']));
     }
 
-    // Save Piece of Article
-    if (isset($_POST['promptPieceArticle'])) {
-        update_post_meta($post_id, '_content_fetcher_piece_article', sanitize_textarea_field($_POST['promptPieceArticle']));
+    // Save Piece of Article Before
+    if (isset($_POST['promptPieceArticleBefore'])) {
+        update_post_meta($post_id, '_content_fetcher_piece_article_before', sanitize_textarea_field($_POST['promptPieceArticleBefore']));
+    }
+
+    // Save Piece of Article After
+    if (isset($_POST['promptPieceArticleAfter'])) {
+        update_post_meta($post_id, '_content_fetcher_piece_article_after', sanitize_textarea_field($_POST['promptPieceArticleAfter']));
     }
 
     // Save Table

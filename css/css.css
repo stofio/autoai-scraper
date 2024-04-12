@@ -112,6 +112,7 @@ input[type="button"]:hover {
 
 textarea {
     width: 100%;
+    height: 90px;
 }
 
 .meta-box-inner {
@@ -162,4 +163,8 @@ textarea[name="credits"] {
 
 .autoai-settings input[type="text"] {
     width: 50%;
+}
+
+#autoai-processed table td {
+    padding: 0 6px;
 }

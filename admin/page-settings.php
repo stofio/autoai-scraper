@@ -1,8 +1,8 @@
 <div class="page-container autoai-settings">
-    <h1>AutoAI General Settings</h1>
-
+    <h1>AI Rewriter</h1>
 
     <form method="post" action="">
+        <h2>Settings</h2>
         <label for="open_ai_key">OpenAI API Key</label><br>
         <input type="text" name="open_ai_key" placeholder="sk-..." value="<?php echo esc_attr(get_option('open_ai_key_option')); ?>" /><br><br>
             
@@ -47,6 +47,13 @@
         <input type="hidden" name="action" value="save_ai_settings" />
         <input type="submit" value="Save Setting">
     </form>
+
+    <h2>Scheduled</h2>
+    <?php
+        //scheduled sources
+        //schedule frequency
+        //next schedule run
+    ?>
 
 
 
