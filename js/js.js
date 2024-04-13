@@ -14,4 +14,6 @@ jQuery(document).ready(function($) {
             alert('Scrape from URL complete: ' + response);
         });
     });
+
+
 });

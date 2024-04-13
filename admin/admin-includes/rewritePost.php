@@ -7,12 +7,6 @@ add_action('wp_before_admin_bar_render', 'add_custom_button_to_admin_bar');
 
 
 
-
-
-
-
-
-
 add_action('wp_ajax_rewrite_the_post', 'rewrite_the_post_callback');
 function rewrite_the_post_callback() {
     // Get the data sent in the AJAX request
@@ -31,11 +25,6 @@ function rewrite_the_post_callback() {
     // Make sure to exit after sending the JSON response
     exit();
 }
-
-
-
-
-
 
 
 

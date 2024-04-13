@@ -13,7 +13,13 @@ add_action('wp_ajax_test_category', 'test_category_callback');
 
 add_action('wp_ajax_delete_processed', 'delete_processed_callback');
 
+add_action('wp_ajax_display_logs', 'display_logs_callback');
+
 add_action('wp_ajax_display_full_prompt', 'display_full_prompt_callback');
+
+add_action('wp_ajax_get_original_url_by_id', 'get_original_url_by_id_callback');
+
+add_action('wp_ajax_rewrite_post', 'rewrite_post_callback');
 
 
 function test_source_callback() {
@@ -115,6 +121,89 @@ function display_full_prompt_callback() {
         wp_send_json_error('Error getting prompt');
     }
 }
+
+
+function display_logs_callback() {
+    
+    // Define the path to the log file
+    $log_file_path = dirname(dirname(plugin_dir_path( __FILE__ ))) . '/logs/' . $_POST['fileName'];
+
+    // Initialize an empty string to store log content
+    $log_content = '';
+
+    // Check if file exists
+    if (file_exists($log_file_path)) {
+        // Open the file
+        $handle = fopen($log_file_path, "r");
+
+        if ($handle) {
+            // Read line by line
+            while (($line = fgets($handle)) !== false) {
+                // Append each line to the log content
+                $log_content .= htmlspecialchars($line);
+            }
+
+            fclose($handle);
+        } else {
+            $log_content = 'Error opening the log file.';
+        }
+    } else {
+        $log_content = 'Log file is empty';
+    }
+
+    // Return the log content within a scrollable div
+    echo '<div style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;" class="log-container">' . $log_content . '</div>';
+    die();
+}
+
+function get_original_url_by_id_callback() {
+    // Verify nonce
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'scrapeai_rewrite_nonce')) {
+        wp_send_json_error('Invalid nonce');
+    }
+
+    if (!isset($_POST['post_id']) || empty($_POST['post_id'])) {
+        wp_send_json_error('Post ID is required');
+    }
+
+    $post_id = $_POST['post_id'];
+
+    require_once dirname(dirname(plugin_dir_path( __FILE__ ))) . '/includes/classes/clsUrlProcessor.php';
+    $proccessor = new UrlProcessor();
+    $url = $proccessor->get_url_by_post_id($post_id);  
+
+    if (!is_wp_error($url)) {
+        wp_send_json_success($url);
+    } else {
+        wp_send_json_error('Error getting prompt');
+    }
+
+}
+
+function rewrite_post_callback() {
+    // Verify nonce
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'scrapeai_rewrite_nonce')) {
+        wp_send_json_error('Invalid nonce');
+    }
+
+    if (!isset($_POST['post_id']) || empty($_POST['post_id'])) {
+        wp_send_json_error('Post ID is required');
+    }
+
+    $post_id = $_POST['post_id'];
+
+    require_once dirname(dirname(plugin_dir_path( __FILE__ ))) . '/includes/classes/clsMain.php';
+    $main = new ScrapeAiMain();
+    $res = $main->runRewritingOfPostedPost($post_id);
+
+    if (!is_wp_error($res)) {
+        wp_send_json_success($res);
+    } else {
+        wp_send_json_error('Error getting prompt');
+    }
+
+}
+
 
 
 ?>

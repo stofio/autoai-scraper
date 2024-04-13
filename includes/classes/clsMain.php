@@ -56,6 +56,31 @@ class ScrapeAiMain {
         return $post_url;
     }
 
+    public function runRewritingOfPostedPost($post_id) {
+        //get source
+        $processor = new UrlProcessor();
+        $sourceId = $processor->getSourcIdFromPostId($post_id);
+        $sourceSettings = $processor->getSourceConfig($sourceId);
+        $url = $processor->get_url_by_post_id($post_id);
+
+        //my_log($sourceSettings);
+
+
+        $scrapedArticle = $this->getScrapedData($sourceSettings, $url);
+        if($scrapedArticle == 'error') {
+            return;
+        }
+
+        $rewrittenArticle = $this->getAiRewritten($scrapedArticle, $sourceSettings);
+        if($rewrittenArticle == 'error') {
+            return;
+        }
+
+        $this->updateRewrittenPost($rewrittenArticle, $post_id);
+
+        //update processed table?
+    }
+
     public function getScrapedData($sourceSettings, $url) {
         // Prepare args for scraping
 
@@ -110,6 +135,13 @@ class ScrapeAiMain {
         require_once plugin_dir_path(__DIR__) . '../includes/classes/clsPosting.php';
         $posting = new clsPosting();
         $post_id = $posting->createNewPost($aiGeneratedContent, $sourceSettings, $jobSettings); // Returns post_id or false
+        return $post_id;
+    }
+
+    private function updateRewrittenPost($rewrittenArticle, $post_id) {
+        require_once plugin_dir_path(__DIR__) . '../includes/classes/clsPosting.php';
+        $posting = new clsPosting();
+        $post_id = $posting->updatePost($rewrittenArticle, $post_id); // Returns post_id or false
         return $post_id;
     }
 }

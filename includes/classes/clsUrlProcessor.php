@@ -13,7 +13,7 @@ class UrlProcessor {
         $this->table_name = $wpdb->prefix . 'autoai_processed';
     }
 
-    public function insert_processed_url($url, $status, $job, $post_id, $sourceID, $original_url) {
+    public function insert_processed_url($url, $status, $job, $post_id, $sourceID) {
         global $wpdb;
 
         $url = $this->normalize_url($url);
@@ -171,6 +171,26 @@ class UrlProcessor {
             $formattedUrl = "http://" . $formattedUrl;
         }
         return $formattedUrl;
+    }
+
+    public function get_url_by_post_id($post_id) {
+        global $wpdb;
+        $table_name = $this->table_name;
+        $query = $wpdb->prepare(
+          "SELECT url FROM $table_name WHERE new_post_id = %d", 
+          $post_id
+        );
+        return $wpdb->get_var($query);
+    }
+
+    function getSourcIdFromPostId($post_id) {
+        global $wpdb;
+        $table_name = $this->table_name;
+        $query = $wpdb->prepare(
+          "SELECT source_id FROM $table_name WHERE new_post_id = %d", 
+          $post_id
+        );
+        return $wpdb->get_var($query);
     }
 
 

@@ -15,6 +15,10 @@ add_action('init', 'register_all_ajax', 1);
 
 add_action('admin_enqueue_scripts', 'scrapeai_scripts', 20);
 
+add_action( 'wp_enqueue_scripts', 'enqueue_source_cpt_script' );
+
+add_action( 'admin_bar_menu', 'custom_admin_bar_button', 999 );
+
 add_action('init', 'register_source_cpt');
 
 
@@ -25,10 +29,6 @@ add_action( 'admin_menu', 'modify_sources_submenu_link' );
 
 //settings page
 add_action('admin_init', 'save_scrapeai_settings');
-
-// Hook the function to add the button to the admin bar
-add_action('wp', 'run_rewrite_post');
-
 
 function register_all_ajax() {
     if (is_admin()) {
@@ -82,6 +82,18 @@ function deactivate_cron_job() {
     }
 }
 
+function enqueue_source_cpt_script() {
+    if ( is_single() && is_user_logged_in() ) {
+        wp_enqueue_script('scrapeai-rewrite-post', plugins_url('/admin/js/rewritePost.js', __FILE__), array( 
+            'jquery', 'wp-blocks', 'wp-element', 'wp-data' 
+        ));
+        wp_localize_script('scrapeai-rewrite-post', 'rewritePost', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('scrapeai_rewrite_nonce'),
+        ));
+    }
+  
+  }
 
 function scrapeai_scripts() {
     if (is_admin()) {
@@ -122,6 +134,14 @@ function scrapeai_scripts() {
             wp_localize_script('scrapeai-processed', 'scrapeaiProcessed', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('scrapeai_delete_processed_nonce'),
+            ));
+        }
+
+        if ($pagenow === 'admin.php' && isset($_GET['page']) && $_GET['page'] === 'scrapeai-logs') {
+            wp_enqueue_script('scrapeai-processed', plugin_dir_url(__FILE__) . '/admin/js/page-logs.js', array('jquery'), null, true);
+            wp_localize_script('scrapeai-processed', 'scrapeaiLogs', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('scrapeai_logs_nonce'),
             ));
         }
     }
@@ -197,15 +217,15 @@ function ai_scraper_custom_menu() {
         'autoai_processed_page'
     );
 
-    // Add 'Logs' submenu
-    // add_submenu_page(
-    //     'autoai-settings',
-    //     'Logs',
-    //     'Logs',
-    //     'manage_options',
-    //     'ai-scraper-logs',
-    //     'ai_scraper_logs_page'
-    // );
+    //Add 'Logs' submenu
+    add_submenu_page(
+        'autoai-settings',
+        'Logs',
+        'Logs',
+        'manage_options',
+        'scrapeai-logs',
+        'ai_scraper_logs_page'
+    );
 
 
 }
@@ -243,6 +263,10 @@ function autoai_settings_page() {
     require_once plugin_dir_path(__FILE__) . '/admin/page-settings.php';
 }
 
+function ai_scraper_logs_page() {
+    require_once plugin_dir_path(__FILE__) . '/admin/page-logs.php';
+}
+
 
 //save settings page
 function save_scrapeai_settings() {
@@ -253,13 +277,6 @@ function save_scrapeai_settings() {
         update_option('open_ai_key_option', $api_key);
         update_option('autoai_output_language', $language);
         
-    }
-}
-
-
-function run_rewrite_post() {
-    if (is_single() && is_user_logged_in()) {
-        require_once plugin_dir_path(__FILE__) . '/admin/admin-includes/rewrite_post.php';
     }
 }
 
@@ -297,6 +314,31 @@ function OLDDDschedule_cron_jobs_for_sources() {
         }
     }
 }
+
+
+// Add a custom button to the admin bar
+function custom_admin_bar_button( $wp_admin_bar ) {
+    if ( ! is_admin() ) {
+        // Get the current post ID
+        $post_id = get_the_ID();
+
+        //CHECK IF IS REWRITTEN POST
+        
+        // Check if it's a single post
+        if ( is_singular() && $post_id ) {
+            // Add your custom button with a link or action
+            $wp_admin_bar->add_menu( array(
+                'id'    => $post_id,
+                'title' => 'Rewrite post',  
+                'href' => '#',
+                'meta'  => array(
+                    'class' => 'rewrite-post-btn'
+                ),
+            ));
+        }
+    }
+}
+
 
 
 

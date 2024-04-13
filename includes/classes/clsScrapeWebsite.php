@@ -82,7 +82,7 @@ class ScrapaWebsite {
                     $imageUrl = $articleDoc->find($selectors['imageUrl'])->attr('src');
                 }
             }
-
+            
             $imageCredit = $sourceSettings['defaultImageCredit'] ?? "";
 
             //clean scraped content
@@ -97,6 +97,8 @@ class ScrapaWebsite {
             $content7 = $this->checkTablesInclusion($content6, $sourceSettings['getTables']);
             $content8 = $this->removeEmptyElements($content7);
             $content9 = $this->removeFirstImage($content8, $sourceSettings['excludeFirstImage']);
+
+            
 
             
             return [
@@ -317,6 +319,8 @@ class ScrapaWebsite {
         foreach ($images as $img) {
             // Check each attribute
             $value = $img->getAttribute('src');
+
+            my_log($value);
     
             // Check if the attribute value is a valid URL with specific extensions
             if (preg_match('/\.(jpg|jpeg|png|webp)(\?.*)?$/i', $value)) {
@@ -495,10 +499,9 @@ class ScrapaWebsite {
         $firstElement = $dom->getElementsByTagName('*')->item(0);
       
         if ($firstElement instanceof DOMElement && 
-            $firstElement->tagName == 'img' &&
-            !in_array($firstElement->getAttribute('src'), $toExclude)) {
+            $firstElement->tagName == 'img' && $toExclude) {
       
-          $firstElement->parentNode->removeChild($firstElement);
+            $firstElement->parentNode->removeChild($firstElement);
         }
 
         $html = $dom->saveHTML();

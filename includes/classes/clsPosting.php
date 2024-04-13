@@ -116,17 +116,15 @@ class clsPosting {
     
         return $post_id; // Return the ID of the new post
     } 
+      
     
-    
-    
-    
-    private function updatePost($article, $post_id) {
+    public function updatePost($article, $post_id) {
         $post_data = array(
             'ID'            => $post_id,
             'post_title'    => $article['title'],
             'post_excerpt'  => $article['excerpt'],
             'post_content'  => $article['content'],
-            'post_status'   => 'publish',
+            //'post_status'   => 'draft',
             'post_author'   => 1, // or another user ID
             'post_type'     => 'post',
             'post_category' => array($categoryID)
