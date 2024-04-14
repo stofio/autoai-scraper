@@ -39,7 +39,7 @@ function register_all_ajax() {
 function init_scheduling() {
     require_once plugin_dir_path(__FILE__) . 'includes/classes/clsScheduling.php';
     $Scheduling = new Scheduling();
-   // add_action('scrape_content_event', array($Scheduling, 'scheduled_event_callback'));
+    add_action('scrape_content_event', array($Scheduling, 'scheduled_event_callback'));
 }
 
 function scrapeai_activate() {
@@ -273,10 +273,15 @@ function save_scrapeai_settings() {
     if (isset($_POST['action']) && $_POST['action'] == 'save_ai_settings') {
         $api_key = isset($_POST['open_ai_key']) ? sanitize_text_field($_POST['open_ai_key']) : '';
         $language = isset($_POST['output_language']) ? sanitize_text_field($_POST['output_language']) : '';
+        $timeADay = isset($_POST['times_a_day_run_cron']) ? sanitize_text_field($_POST['times_a_day_run_cron']) : '';
         
         update_option('open_ai_key_option', $api_key);
         update_option('autoai_output_language', $language);
-        
+        update_option('times_a_day_run_cron', $timeADay);
+
+        require_once plugin_dir_path(__FILE__) . 'includes/classes/clsScheduling.php';
+        $Scheduling = new Scheduling();
+        $Scheduling->activate_cron_job();
     }
 }
 

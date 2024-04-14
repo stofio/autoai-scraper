@@ -12,8 +12,10 @@ class Scheduling {
         my_second_log('INFO', 'SCHEDULED START');
 
         $sourcesIds = $this->get_scheduled_sources(); //return array of ids
+        my_log('RUNNEd');
 
         foreach ($sourcesIds as $source_id) {
+            continue;
             $urlsToPost = $this->getAllNewArticlesForSource($source_id); //return array of urls
             $urlsToPost == false ? null : $this->start_scrape_and_rewrite($urlsToPost, $source_id);
         }
@@ -27,8 +29,9 @@ class Scheduling {
         //
         //
         wp_clear_scheduled_hook('scrape_content_event');
-        $times_a_day = get_option('times_a_day_run_cron'); 
-        wp_schedule_event(time(), $times_a_day, 'scrape_content_event');
+        $times_a_day = get_option('times_a_day_run_cron') ?: 'daily';
+        my_log($times_a_day);
+        wp_schedule_event(time() + 100, $times_a_day, 'scrape_content_event');
     }
 
 

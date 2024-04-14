@@ -1,6 +1,7 @@
 {
     "require": {
-        "symfony/dom-crawler": "^7.0",
-        "symfony/css-selector": "^7.0"
+        "symfony/dom-crawler": "^5.1.0",
+        "symfony/css-selector": "^4.0.0",
+        "symfony/deprecation-contracts": "^2.2"
     }
 }
