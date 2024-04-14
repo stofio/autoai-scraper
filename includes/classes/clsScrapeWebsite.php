@@ -317,15 +317,25 @@ class ScrapaWebsite {
     
         // Iterate over all images
         foreach ($images as $img) {
-            // Check each attribute
-            $value = $img->getAttribute('src');
-
-            my_log($value);
+            // Get all attributes of the image tag
+            $attributes = $img->attributes;
     
-            // Check if the attribute value is a valid URL with specific extensions
-            if (preg_match('/\.(jpg|jpeg|png|webp)(\?.*)?$/i', $value)) {
+            // Initialize a variable to hold the valid URL
+            $validUrl = '';
+    
+            // Iterate over each attribute of the image tag
+            foreach ($attributes as $attribute) {
+                // Check if the attribute value is a valid URL with specific extensions
+                if (preg_match('/\.(jpg|jpeg|png|webp)(\?.*)?$/i', $attribute->nodeValue)) {
+                    $validUrl = $attribute->nodeValue;
+                    break; // Break the loop if a valid URL is found
+                }
+            }
+    
+            // If a valid URL is found, replace the image tag
+            if (!empty($validUrl)) {
                 // Create a new image tag with only the src attribute
-                $newImg = '<img src="' . $value . '">';
+                $newImg = '<img src="' . $validUrl . '">';
     
                 // Create a new Crawler instance for the new image tag
                 $newCrawler = new Crawler($newImg);
@@ -340,6 +350,7 @@ class ScrapaWebsite {
     
         return $crawler->html();
     }
+    
 
     private function reorderAndExtractImages($content) {
         $content = mb_convert_encoding('<?xml encoding="UTF-8">' . $content, 'UTF-8', 'auto');
