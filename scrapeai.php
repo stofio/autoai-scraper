@@ -39,7 +39,6 @@ function register_all_ajax() {
 function init_scheduling() {
     require_once plugin_dir_path(__FILE__) . 'includes/classes/clsScheduling.php';
     $Scheduling = new Scheduling();
-    my_log('UUU');
     $Scheduling->scheduled_event_callback();
 }
 
@@ -279,7 +278,7 @@ function save_scrapeai_settings() {
         update_option('times_a_day_run_cron', $timeADay);
 
         require_once plugin_dir_path(__FILE__) . 'includes/classes/clsScheduling.php';
-        $Scheduling = new Scheduling();
+        $Scheduling = new Scheduling(false);
         $Scheduling->activate_cron_job();
     }
 }

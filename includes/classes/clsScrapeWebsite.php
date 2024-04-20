@@ -146,7 +146,7 @@ class ScrapaWebsite {
         }
         catch (Exception $e) {
             if ($e->getMessage() == "Container selector not found") {
-                my_second_log("ERROR", "Error with container selector for category page: " . $e->getMessage());
+                my_second_log("ERROR", "Error with css container selector for category page: " . $catPageUrl);
                 return null;
             }
         }
@@ -228,11 +228,11 @@ class ScrapaWebsite {
     }
 
     private function cleanHtmlContent($htmlString) {
-    	$tagsToKeep = ['p', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'img'];
+        $tagsToKeep = ['p', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'img'];
 
-    	$crawler = new Crawler($htmlString);
+        $crawler = new Crawler($htmlString);
 
-	    // Remove all tags except the allowed ones
+        // Remove all tags except the allowed ones
         $crawler->filter('*')->each(function (Crawler $node, $i) use ($tagsToKeep) {
             if (!in_array($node->nodeName(), $tagsToKeep)) {
                 // Replace the current node with its own content
@@ -540,19 +540,19 @@ class ScrapaWebsite {
       
     }
 
-	private function removeSpecificTags($htmlString) {
-	    $tagsToRemove = ['figure', 'div', 'picture', 'source', 'figcaption', 'span', 'aside', 'meta', 'br'];
-	    foreach ($tagsToRemove as $tag) {
-	        $htmlString = preg_replace('/<'.$tag.'[^>]*>/', '', $htmlString);
-	        $htmlString = preg_replace('/<\/'.$tag.'>/', '', $htmlString);
-	    }
-	    return $htmlString;
-	}
+    private function removeSpecificTags($htmlString) {
+        $tagsToRemove = ['figure', 'div', 'picture', 'source', 'figcaption', 'span', 'aside', 'meta', 'br'];
+        foreach ($tagsToRemove as $tag) {
+            $htmlString = preg_replace('/<'.$tag.'[^>]*>/', '', $htmlString);
+            $htmlString = preg_replace('/<\/'.$tag.'>/', '', $htmlString);
+        }
+        return $htmlString;
+    }
 
 
 
 
-	
+    
 
 }
 

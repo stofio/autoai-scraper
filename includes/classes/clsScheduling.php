@@ -8,9 +8,8 @@ class Scheduling {
 
     //callback function of each cron run
     public function scheduled_event_callback() {
-        require_once dirname(dirname(plugin_dir_path( __FILE__ ))) . '../includes/utilities.php';
+        require_once dirname(dirname(plugin_dir_path( __FILE__ ))) . '/includes/utilities.php';
         my_second_log('INFO', 'SCHEDULED START');
-        my_log('AABBCC');
 
         $sourcesIds = $this->get_scheduled_sources(); //return array of ids
 
@@ -40,6 +39,32 @@ class Scheduling {
         } else {
             echo "No events scheduled";
         }
+    }
+
+    public function get_scheduled_sources() {
+        $args = array(
+            'post_type' => 'sources_cpt',
+            'meta_query' => array(
+                array(
+                    'key' => '_content_fetcher_run_daily',
+                    'value' => '1',
+                    'compare' => '='
+                )
+            )
+        );
+
+        $query = new WP_Query( $args );
+
+        $post_ids = array();
+
+        if ( $query->have_posts() ) {
+            while ( $query->have_posts() ) {
+            $query->the_post();
+            $post_ids[] = get_the_ID(); 
+            }
+        }
+        
+        return $post_ids;
     }
 
     public function display_scheduled_sources() {
@@ -144,7 +169,7 @@ class Scheduling {
         // Get source settings
         $source_settings = get_post_meta($source_id);
 
-        require_once dirname(dirname(plugin_dir_path( __FILE__ ))) . '../includes/classes/clsMain.php';
+        require_once dirname(dirname(plugin_dir_path( __FILE__ ))) . '/includes/classes/clsMain.php';
         foreach($urls as $url) {            
             $main = new ScrapeAiMain();
             $main->runScrapeRewriteAndPost($source_settings, $jobSettings, $url);
@@ -188,6 +213,7 @@ class Scheduling {
     private function getSourceCheckTpye($source_id) {
         global $wpdb;
         $check_type = get_post_meta($source_id, '_content_fetcher_check_type', true);
+        return $check_type;
     }
 
 
