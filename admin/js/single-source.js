@@ -89,8 +89,8 @@ jQuery(document).ready(function($) {
                 href: href
             },
             success: function(response) {
-                console.log(response);
                 if (response.success) {
+                    if(!response.data) alert('An error occured. Check logs for more info');
                     if(response.data.length === 0) {
                         alert('No articles found. Please check the category URL and container selector.');
                     } else {

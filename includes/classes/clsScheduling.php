@@ -10,12 +10,11 @@ class Scheduling {
     public function scheduled_event_callback() {
         require_once dirname(dirname(plugin_dir_path( __FILE__ ))) . '../includes/utilities.php';
         my_second_log('INFO', 'SCHEDULED START');
+        my_log('AABBCC');
 
         $sourcesIds = $this->get_scheduled_sources(); //return array of ids
-        my_log('RUNNEd');
 
         foreach ($sourcesIds as $source_id) {
-            continue;
             $urlsToPost = $this->getAllNewArticlesForSource($source_id); //return array of urls
             $urlsToPost == false ? null : $this->start_scrape_and_rewrite($urlsToPost, $source_id);
         }
@@ -23,25 +22,87 @@ class Scheduling {
     }
 
     public function activate_cron_job() {
-        //
-        //
-        // TO CHECK
-        //
-        //
         wp_clear_scheduled_hook('scrape_content_event');
         $times_a_day = get_option('times_a_day_run_cron') ?: 'daily';
-        my_log($times_a_day);
         wp_schedule_event(time() + 100, $times_a_day, 'scrape_content_event');
     }
 
+    public function display_scheduled_time() {
+        // Get the next scheduled timestamp for your cron job
+        $next_run_timestamp = wp_next_scheduled('scrape_content_event');
+        if ($next_run_timestamp) {
+            // Convert the timestamp to a human-readable date
+            $next_run_time = date('Y-m-d H:i:s', $next_run_timestamp);
+            // Get the current time
+            $current_time = date('Y-m-d H:i:s');
+            echo "Current time: $current_time<br>";
+            echo "Next scheduled run: $next_run_time";
+        } else {
+            echo "No events scheduled";
+        }
+    }
 
-    public function get_scheduled_sources() {
-        return get_posts(array(
-            'post_type'  => 'sources_cpt',
-            'meta_key'   => '_content_fetcher_run_daily',
-            'meta_value' => '1',
-            'fields'     => 'ids', // Retrieve only IDs
-        ));
+    public function display_scheduled_sources() {
+        $args = array(
+            'post_type' => 'sources_cpt',
+            'meta_query' => array(
+            array(
+                'key' => '_content_fetcher_run_daily', 
+                'value' => '1',
+                'compare' => '='
+            )
+            )
+        );
+        
+        $query = new WP_Query( $args );
+        
+        if ( $query->have_posts() ) {
+            echo '<ol>';
+            while ( $query->have_posts() ) {
+                $query->the_post();
+                    echo '<li>';
+                    echo '<a href="' . get_edit_post_link(get_the_ID()) . '">' . get_the_title() . '</a>';
+                    echo '</li>';
+            }
+            echo '</ol>';
+        } else {
+            echo 'Setup scheduling on a source';
+        }
+        
+        wp_reset_postdata();
+    }
+    
+
+    public function get_scheduled_events() {
+        global $wpdb;
+        $scheduled_events = array();
+
+        // Get all scheduled events
+        $cron_jobs = _get_cron_array();
+
+        foreach ($cron_jobs as $timestamp => $cron) {
+            foreach ($cron as $hook => $events) {
+                if (strpos($hook, 'scrape_content_event') === 0) {
+                    // Extract source ID from event name
+                    $source_id = (int)str_replace('scrape_content_event', '', $hook);
+
+                    // Get source post title
+                    $source_title = get_the_title($source_id);
+
+                    // Get next run time
+                    $next_run_time = date('Y-m-d H:i:s', $timestamp);
+
+                    // Add to scheduled events array
+                    $scheduled_events[] = array(
+                        'source_id' => $source_id,
+                        'source_title' => $source_title,
+                        'next_run_time' => $next_run_time
+                    );
+                }
+            }
+        }
+
+        return $scheduled_events;
     }
 
     private function getAllNewArticlesForSource($source_id) {
@@ -90,38 +151,6 @@ class Scheduling {
         }
     }
 
-    public function get_all_scheduled_events() {
-        global $wpdb;
-        $scheduled_events = array();
-
-        // Get all scheduled events
-        $cron_jobs = _get_cron_array();
-
-        foreach ($cron_jobs as $timestamp => $cron) {
-            foreach ($cron as $hook => $events) {
-                if (strpos($hook, 'scrape_content_event') === 0) {
-                    // Extract source ID from event name
-                    $source_id = (int)str_replace('scrape_content_event', '', $hook);
-
-                    // Get source post title
-                    $source_title = get_the_title($source_id);
-
-                    // Get next run time
-                    $next_run_time = date('Y-m-d H:i:s', $timestamp);
-
-                    // Add to scheduled events array
-                    $scheduled_events[] = array(
-                        'source_id' => $source_id,
-                        'source_title' => $source_title,
-                        'next_run_time' => $next_run_time
-                    );
-                }
-            }
-        }
-
-        return $scheduled_events;
-    }
-
     private function getAllPostedArticleIdsForSource($source_id) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'autoai_processed';
@@ -160,6 +189,8 @@ class Scheduling {
         global $wpdb;
         $check_type = get_post_meta($source_id, '_content_fetcher_check_type', true);
     }
+
+
       
 
 

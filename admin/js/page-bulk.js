@@ -74,7 +74,7 @@ jQuery(document).ready(function($) {
                 error: function(xhr, status, error) {
                     // Handle errors, maybe try the URL again or log it
                     console.log(error);
-                    $('#progress-messages').append( '<p>' + index + ' - Ajax error for URL: ' + formData.urls[index] + '</p>');
+                    $('#progress-messages').append( '<p>' + index + ' - An error occured for URL: ' + formData.urls[index] + ' - Check logs</p>');
                     updateProgressBar(index, formData.urls.length);
                     processNextUrl(formData, index + 1);
                 }

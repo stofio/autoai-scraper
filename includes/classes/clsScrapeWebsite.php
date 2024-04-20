@@ -99,8 +99,6 @@ class ScrapaWebsite {
             $content9 = $this->removeFirstImage($content8, $sourceSettings['excludeFirstImage']);
 
             
-
-            
             return [
                 "title" => $title,
                 "content" => $content9,
@@ -121,22 +119,37 @@ class ScrapaWebsite {
     }
 
     public function scrapeCategoryPage($catPageUrl, $listContainer, $firstArticleHref) {
-        // Initial request to get the list of articles or the CATEGORY page
-        $doc = hQuery::fromUrl($catPageUrl, ['Accept' => 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8']);
-        if (!$doc) {
-            throw new Exception("Failed to load content from URL: $catPageUrl");
-        }
-        
-        // Find the container element
-        $container = $doc->find($listContainer);
+        try {
+            $doc = hQuery::fromUrl($catPageUrl, ['Accept' => 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8']);
+            if (!$doc) {
+                throw new Exception("Failed to load content from URL: $catPageUrl");
+            }
+            
+            // Find the container element
+            $container = $doc->find($listContainer);
 
-        // Extract article URLs from within that container 
-        $articleUrls = [];
-        foreach($container->find($firstArticleHref) as $link) {
-            $articleUrls[] = $link->href;
-        }
+            
+            if(!$container) {
+                throw new Exception("Container selector not found");
+                my_second_log("ERROR", "Error with container selector: " . $e->getMessage());
+                return "error";
+            }
+            
+            
+            // Extract article URLs from within that container 
+            $articleUrls = [];
+            foreach($container->find($firstArticleHref) as $link) {
+                $articleUrls[] = $link->href;
+            }
 
-        return $articleUrls;      
+            return $articleUrls;      
+        }
+        catch (Exception $e) {
+            if ($e->getMessage() == "Container selector not found") {
+                my_second_log("ERROR", "Error with container selector for category page: " . $e->getMessage());
+                return null;
+            }
+        }
     }
 
     private function checkImgsInclusion($content, $isGetImages) {

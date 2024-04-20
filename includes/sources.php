@@ -116,6 +116,9 @@ function content_fetcher_web_scraping_callback($post) {
     $saved_title_selector = get_post_meta($post->ID, '_content_fetcher_title_selector', true);
     $saved_content_selector = get_post_meta($post->ID, '_content_fetcher_content_selector', true);
     $saved_image_url_selector = get_post_meta($post->ID, '_content_fetcher_image_url_selector', true);
+    if (empty($saved_image_url_selector)) {
+        $saved_image_url_selector = 'meta[property="og:image"]'; 
+    }
     $saved_news_label_selector = get_post_meta($post->ID, '_content_fetcher_article_type_selector', true);
     $saved_news_label_text = get_post_meta($post->ID, '_content_fetcher_article_type_text', true);
 
@@ -126,7 +129,7 @@ function content_fetcher_web_scraping_callback($post) {
             <h3><b>Source page</b></h3>
             <!-- <img class="question-hint" id="hintCatPage" src="<?php echo plugins_url('../assets/question.svg', __FILE__); ?>" /> -->
 
-            <label>URL: </label>
+            <label>URL (category page if auto scheduling on): </label>
             <input type="text" name="baseUrl" placeholder="https://..." value="<?php echo esc_attr($saved_base_url); ?>"><br>
             
         </div>
@@ -178,17 +181,18 @@ function content_fetcher_scheduling_publishing_callback($post) {
     ?>
     <div>
 
-        <h3><b>Schedule</b></h3>
-        <label>Run daily check on category page 
+        <h3><b>Schedule auto-rewrite</b></h3>
+        <label>Activate cron job  for current source, automatically check and rewrite new articles
             <input type="checkbox" name="runDaily" <?php checked($saved_run_daily, '1'); ?> />
         </label><br><br>
         <label>Check: </label>
         <select name="selectCheckType">
             <option value="all" <?php echo ($saved_check_type == 'all') ? 'selected' : ''; ?>>All articles</option>
             <option value="last" <?php echo ($saved_check_type == 'last') ? 'selected' : ''; ?> >Only last article</option>
-        </select><br><br>
+        </select> set interval in <a href="/wp-admin/admin.php?page=autoai-settings">general settings</a><br><br>
         <div class="meta-box-inner">
             <h4>Category page</h4>
+            <p>Set the category page URL as 'Source page'</p>
             <label>Articles list container: </label>
             <input type="text" name="postsListContainer" placeholder="CSS selector" value="<?php echo esc_attr($saved_cat_page_list_container); ?>"><br> 
             <label>Last article selector from source URL (the first a href of the first article): </label>

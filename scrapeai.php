@@ -22,7 +22,7 @@ add_action( 'admin_bar_menu', 'custom_admin_bar_button', 999 );
 add_action('init', 'register_source_cpt');
 
 
-add_action('init', 'init_scheduling');
+add_action('scrape_content_event', 'init_scheduling');
 
 add_action('admin_menu', 'ai_scraper_custom_menu');
 add_action( 'admin_menu', 'modify_sources_submenu_link' );
@@ -39,7 +39,8 @@ function register_all_ajax() {
 function init_scheduling() {
     require_once plugin_dir_path(__FILE__) . 'includes/classes/clsScheduling.php';
     $Scheduling = new Scheduling();
-    add_action('scrape_content_event', array($Scheduling, 'scheduled_event_callback'));
+    my_log('UUU');
+    $Scheduling->scheduled_event_callback();
 }
 
 function scrapeai_activate() {
@@ -168,6 +169,8 @@ function register_source_cpt() {
     $args = array(
         'labels' => $labels,
         'public' => true,
+        'exclude_from_search' => true,
+        'publicly_queryable' => false,
         'label'  => 'Sources',
         'supports' => array('title'),
         'show_in_menu' => false,
@@ -195,7 +198,7 @@ function ai_scraper_custom_menu() {
         'Sources',                  // Menu title
         'manage_options',           // Capability required
         'scrapeai-sources',             // Menu slug
-        'autoai__' // Function to display the page
+        '' // Function to display the page
     );
 
 
@@ -233,17 +236,13 @@ function ai_scraper_custom_menu() {
 function modify_sources_submenu_link() {
     global $submenu;
 
-    // Check if the parent menu slug 'ai-auto-post' exists
-    if ( isset( $submenu['autoai-settings'] ) ) {
-        // Loop through the submenu items of 'autoai-settings'
-        foreach ( $submenu['autoai-settings'] as $key => $item ) {
-            // Check if the submenu item slug is 'scrapeai-sources'
-            if ( $item[2] === 'scrapeai-sources' ) {
-                // Modify the URL to point to the edit.php page for your custom post type
-                $submenu['autoai-settings'][$key][2] = 'edit.php?post_type=sources_cpt';
-                break;
-            }
+    if(isset($submenu['autoai-settings'])) {
+    foreach($submenu['autoai-settings'] as $key => $item) {
+        if($item[2] === 'scrapeai-sources') {
+        $submenu['autoai-settings'][$key][2] = 'edit.php?post_type=sources_cpt';
+        break;
         }
+    }
     }
 }
 
