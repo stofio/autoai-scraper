@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: AI-powered Content Creation with RSS and Scraping
+ * Plugin Name: Auto AI-Rewriting with Scraping
  * Plugin URI: #
  * Description: This plugin scrapes from selected URLs/sources, rewrites the articles with AI and creates new posts
  * Version: 1.0.0
@@ -21,8 +21,12 @@ add_action( 'admin_bar_menu', 'custom_admin_bar_button', 999 );
 
 add_action('init', 'register_source_cpt');
 
+//scheduling
+add_action('scrape_content_event_daily', function() {init_scheduling('daily');});
+add_action('scrape_content_event_hourly', function() {init_scheduling('hourly');});
+add_action('scrape_content_event_twicedaily', function() {init_scheduling('twicedaily');});
+add_action('scrape_content_event_weekly', function() {init_scheduling('weekly');});
 
-add_action('scrape_content_event', 'init_scheduling');
 
 add_action('admin_menu', 'ai_scraper_custom_menu');
 add_action( 'admin_menu', 'modify_sources_submenu_link' );
@@ -36,10 +40,10 @@ function register_all_ajax() {
     }
 }
 
-function init_scheduling() {
+function init_scheduling($interval) {
     require_once plugin_dir_path(__FILE__) . 'includes/classes/clsScheduling.php';
-    $Scheduling = new Scheduling();
-    $Scheduling->scheduled_event_callback();
+    $scheduling = new Scheduling();
+    $scheduling->scheduled_event_callback($interval);
 }
 
 function scrapeai_activate() {
@@ -70,10 +74,12 @@ function scrapeai_activate() {
 
 //remove cron job
 function deactivate_cron_job() {
+    $cron_names = array('scrape_content_event_daily', 'scrape_content_event_hourly', 'scrape_content_event_twicedaily', 'scrape_content_event_weekly');
     $cron_jobs = _get_cron_array();    
     foreach ($cron_jobs as $timestamp => $cron) {
         foreach ($cron as $hook => $events) {
-            if ($hook === 'scrape_content_event') {
+            
+            if (in_array($hook, $cron_names)) {
                 foreach ($events as $event) {
                     wp_unschedule_event($timestamp, $hook, $event['args']);
                 }
@@ -84,7 +90,7 @@ function deactivate_cron_job() {
 
 function enqueue_source_cpt_script() {
     if ( is_single() && is_user_logged_in() ) {
-        wp_enqueue_script('scrapeai-rewrite-post', plugins_url('/admin/js/rewritePost.js', __FILE__), array( 
+        wp_enqueue_script('scrapeai-rewrite-post', plugins_url('/admin/js/rewrite-post.js', __FILE__), array( 
             'jquery', 'wp-blocks', 'wp-element', 'wp-data' 
         ));
         wp_localize_script('scrapeai-rewrite-post', 'rewritePost', array(

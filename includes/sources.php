@@ -171,13 +171,13 @@ function content_fetcher_scheduling_publishing_callback($post) {
     $saved_cat_page_list_container = get_post_meta($post->ID, '_content_fetcher_category_list_container', true);
     $saved_run_daily = get_post_meta($post->ID, '_content_fetcher_run_daily', true);
     $saved_check_type = get_post_meta($post->ID, '_content_fetcher_check_type', true);
-    //$saved_fetch_times = get_post_meta($post->ID, '_content_fetcher_fetch_times', true);
+    $saved_fetch_interval = get_post_meta($post->ID, '_content_fetcher_fetch_interval', true);
     $saved_post_status = get_post_meta($post->ID, '_content_fetcher_post_status', true);
 
     // Define the options for fetch times and post status
     $fetch_times_options = [1, 2, 3, 10, 30];
     $post_status_options = ['publish' => 'Publish', 'draft' => 'Draft'];
-
+var_dump($saved_fetch_interval);
     ?>
     <div>
 
@@ -189,7 +189,14 @@ function content_fetcher_scheduling_publishing_callback($post) {
         <select name="selectCheckType">
             <option value="all" <?php echo ($saved_check_type == 'all') ? 'selected' : ''; ?>>All articles</option>
             <option value="last" <?php echo ($saved_check_type == 'last') ? 'selected' : ''; ?> >Only last article</option>
-        </select> set interval in <a href="/wp-admin/admin.php?page=autoai-settings">general settings</a><br><br>
+        </select><br><br>
+        <label>Interval: </label>
+        <select name="selectFetchInterval">
+            <option value="daily" <?php if($saved_fetch_interval == 'daily') echo 'selected';  ?>>Daily</option>
+            <option value="hourly" <?php if($saved_fetch_interval == 'hourly') echo 'selected';  ?>>Hourly</option>
+            <option value="twicedaily" <?php if($saved_fetch_interval == 'twicedaily') echo 'selected';  ?>>Twicedaily</option>
+            <option value="weekly" <?php if($saved_fetch_interval == 'weekly') echo 'selected';  ?>>Weekly</option>
+        </select>
         <div class="meta-box-inner">
             <h4>Category page</h4>
             <p>Set the category page URL as 'Source page'</p>
@@ -478,9 +485,9 @@ function content_fetcher_save_source_meta($post_id) {
     }
 
     // Save Fetch Source Times a Day
-    // if (isset($_POST['selectFetchTimesADay'])) {
-    //     update_post_meta($post_id, '_content_fetcher_fetch_times', intval($_POST['selectFetchTimesADay']));
-    // }
+    if (isset($_POST['selectFetchInterval'])) {
+        update_post_meta($post_id, '_content_fetcher_fetch_interval', $_POST['selectFetchInterval']);
+    }
 
     // Save Post Status After Rewriting
     if (isset($_POST['selectPostStatus'])) {

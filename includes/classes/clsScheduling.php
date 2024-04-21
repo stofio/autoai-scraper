@@ -7,11 +7,11 @@ class Scheduling {
     }
 
     //callback function of each cron run
-    public function scheduled_event_callback() {
+    public function scheduled_event_callback($interval) {
         require_once dirname(dirname(plugin_dir_path( __FILE__ ))) . '/includes/utilities.php';
         my_second_log('INFO', 'SCHEDULED START');
 
-        $sourcesIds = $this->get_scheduled_sources(); //return array of ids
+        $sourcesIds = $this->get_scheduled_sources_by_interval($interval); //return array of ids
 
         foreach ($sourcesIds as $source_id) {
             $urlsToPost = $this->getAllNewArticlesForSource($source_id); //return array of urls
@@ -21,9 +21,15 @@ class Scheduling {
     }
 
     public function activate_cron_job() {
-        wp_clear_scheduled_hook('scrape_content_event');
-        $times_a_day = get_option('times_a_day_run_cron') ?: 'daily';
-        wp_schedule_event(time() + 100, $times_a_day, 'scrape_content_event');
+        wp_clear_scheduled_hook('scrape_content_event_daily');
+        wp_clear_scheduled_hook('scrape_content_event_hourly');
+        wp_clear_scheduled_hook('scrape_content_event_twicedaily');
+        wp_clear_scheduled_hook('scrape_content_event_weekly');
+        //$times_a_day = get_option('times_a_day_run_cron') ?: 'daily';
+        wp_schedule_event(time() + 21600, 'daily', 'scrape_content_event_daily');
+        wp_schedule_event(time() + 43200, 'hourly', 'scrape_content_event_hourly');
+        wp_schedule_event(time() + 64800, 'twicedaily', 'scrape_content_event_twicedaily');
+        wp_schedule_event(time() + 86400, 'weekly', 'scrape_content_event_weekly');
     }
 
     public function display_scheduled_time() {
@@ -41,15 +47,21 @@ class Scheduling {
         }
     }
 
-    public function get_scheduled_sources() {
+    public function get_scheduled_sources_by_interval($interval) {
         $args = array(
             'post_type' => 'sources_cpt',
             'meta_query' => array(
-                array(
-                    'key' => '_content_fetcher_run_daily',
-                    'value' => '1',
-                    'compare' => '='
-                )
+              'relation' => 'AND',
+              array(
+                'key' => '_content_fetcher_run_daily',
+                'value' => '1',
+                'compare' => '='
+              ),
+              array(
+                'key' => '_content_fetcher_fetch_interval', 
+                'value' => $interval,
+                'compare' => '='
+              )
             )
         );
 
@@ -71,11 +83,11 @@ class Scheduling {
         $args = array(
             'post_type' => 'sources_cpt',
             'meta_query' => array(
-            array(
-                'key' => '_content_fetcher_run_daily', 
-                'value' => '1',
-                'compare' => '='
-            )
+                array(
+                    'key' => '_content_fetcher_run_daily', 
+                    'value' => '1',
+                    'compare' => '='
+                )
             )
         );
         
@@ -98,37 +110,48 @@ class Scheduling {
     }
     
 
-    public function get_scheduled_events() {
-        global $wpdb;
-        $scheduled_events = array();
+    public function display_scheduled_events() {
 
+        global $wpdb;
+      
+        $scheduled_events = array();
+        $cron_names = array('scrape_content_event_daily', 'scrape_content_event_hourly', 'scrape_content_event_twicedaily', 'scrape_content_event_weekly');
+      
         // Get all scheduled events
         $cron_jobs = _get_cron_array();
-
+      
         foreach ($cron_jobs as $timestamp => $cron) {
             foreach ($cron as $hook => $events) {
-                if (strpos($hook, 'scrape_content_event') === 0) {
+                //var_dump($hook);
+                //echo '<br>';
+        
+                // Check if cron name matches
+                if (in_array($hook, $cron_names)) {
+        
                     // Extract source ID from event name
-                    $source_id = (int)str_replace('scrape_content_event', '', $hook);
+                    $interval = str_replace('scrape_content_event_', '', $hook);
+                    $sourcesIds = $this->get_scheduled_sources_by_interval($interval);
 
-                    // Get source post title
-                    $source_title = get_the_title($source_id);
-
-                    // Get next run time
-                    $next_run_time = date('Y-m-d H:i:s', $timestamp);
-
-                    // Add to scheduled events array
-                    $scheduled_events[] = array(
-                        'source_id' => $source_id,
-                        'source_title' => $source_title,
-                        'next_run_time' => $next_run_time
-                    );
+                    if(count($sourcesIds)>0) {
+                        echo '<h4>';
+                        echo strtoupper($interval);
+                        echo ':</h4>';
+                        foreach($sourcesIds as $source_id){
+                            //get source title
+                            $source_title = get_the_title($source_id);
+                            $next_run_time = date('Y-m-d H:i:s', $timestamp);
+                            echo '<a href="' . get_edit_post_link() . '">';
+                            echo $source_title;
+                            echo ' - ';
+                            echo $next_run_time;
+                            echo '</a><br>';
+                        }
+                    }
                 }
             }
-        }
-
-        return $scheduled_events;
+        }      
     }
+      
 
     private function getAllNewArticlesForSource($source_id) {
         //get post data for scraping cat page

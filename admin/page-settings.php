@@ -44,17 +44,6 @@
             ?>
         </select><br><br>
 
-        <?php
-        $times_a_day_run_cron = get_option('times_a_day_run_cron', '');
-        ?>
-
-        <label>Cron job interval to check for new articles</label><br>
-        <select name="times_a_day_run_cron">
-            <option value="daily" <?php if($times_a_day_run_cron == 'daily') echo 'selected';  ?>>Daily</option>
-            <option value="hourly" <?php if($times_a_day_run_cron == 'hourly') echo 'selected';  ?>>Hourly</option>
-            <option value="twicedaily" <?php if($times_a_day_run_cron == 'twicedaily') echo 'selected';  ?>>Twicedaily</option>
-            <option value="weekly" <?php if($times_a_day_run_cron == 'weekly') echo 'selected';  ?>>Weekly</option>
-        </select><br><br>
 
         <input type="hidden" name="action" value="save_ai_settings" />
         <input type="submit" value="Save Setting">
@@ -66,10 +55,12 @@
         $sched = new Scheduling();
     ?>
 
-    <?php $sched->display_scheduled_time(); ?>
+    <?php $current_time = date('Y-m-d H:i:s');
+            echo "Current time: $current_time<br>";
+    ?>
 
-    <h4>Active scheduled sources: </h4>
-    <?php $sched->display_scheduled_sources(); ?>
+    <?php $sched->display_scheduled_events(); ?>
+
 
 
 
