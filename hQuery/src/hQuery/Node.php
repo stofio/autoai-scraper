@@ -1,7 +1,6 @@
 <?php
 namespace duzun\hQuery;
 
-use duzun\hQuery\Parser\Selector as SelectorParser;
 use duzun\hQuery\Parser\HTML as HTMLParser;
 
 // ------------------------------------------------------------------------
@@ -16,7 +15,7 @@ use duzun\hQuery\Parser\HTML as HTMLParser;
 abstract class Node implements \Iterator, \Countable
 {
     // ------------------------------------------------------------------------
-    const VERSION = '3.0.3';
+    const VERSION = '3.1.0';
     // ------------------------------------------------------------------------
     /**
      * Response details of last request
@@ -26,7 +25,7 @@ abstract class Node implements \Iterator, \Countable
 
     // ------------------------------------------------------------------------
     /**
-     * @var duzun\hQuery\Node
+     * @var Node
      */
     public static $selected_doc = null;
 
@@ -117,7 +116,7 @@ abstract class Node implements \Iterator, \Countable
             self::$selected_doc = self::$_nl_;
         }
 
-        $this->ids = self::$_nl_; // If any reference exists, destroy its contents! P.S. Might be buggy, but hey, I own this property. Sincerely yours, hQuery_Node class.
+        $this->ids = self::$_nl_; // If any reference exists, destroy its contents! P.S. Might be buggy, but hey, I own this property. Sincerely yours, Node class.
         unset($this->doc, $this->ids);
     }
 
@@ -181,7 +180,7 @@ abstract class Node implements \Iterator, \Countable
      *
      * @param  string         $sel       A valid CSS selector (some pseudo-selectors supported).
      * @param  array|string   $attr      OPTIONAL attributes as string or key-value pairs.
-     * @return hQuery_Element collection of matched elements or NULL
+     * @return Element collection of matched elements or NULL
      */
     public function find($sel, $attr = null)
     {
@@ -191,7 +190,7 @@ abstract class Node implements \Iterator, \Countable
     /**
      * @param  string           $sel  A valid CSS selector (some pseudo-selectors supported).
      * @param  array|string     $attr OPTIONAL attributes as string or key-value pairs.
-     * @return hQuery_Element
+     * @return Element
      */
     public function exclude($sel, $attr = null)
     {
@@ -287,13 +286,25 @@ abstract class Node implements \Iterator, \Countable
         $ret = self::$_nl_;
         $map = isset($this->tag_map) ? $this->tag_map : (isset($doc->tag_map) ? $doc->tag_map : null);
         foreach ($id as $p => $q) {
-            $a = $doc->get_attr_byId($p, null, true);
+            $a = $doc->get_attr_byId($p, null, true, true);
             $n = $doc->tags[$p];
             if ($map && isset($map[$_n = strtolower($n)])) {
                 $n = $map[$_n];
             }
             $h = $p++ == $q ? false : ($p < $q ? substr($doc->html, $p, $q - $p) : '');
-            $ret .= '<' . $n . ($a ? ' ' . $a : '') . (false === $h ? ' />' : '>' . $h . '</' . $n . '>');
+
+            // Preserve the tag close style from source
+            $tc = $p - 2;
+            if($h === false && strspn($doc->html, '/', $tc) == 1) {
+                --$tc;
+            }
+            while(HTMLParser::is_whitespace(substr($doc->html, $tc, 1))) {
+                --$tc;
+            }
+            ++$tc;
+            $tc = substr($doc->html, $tc, $p - $tc);
+
+            $ret .= '<' . $n . ($a ? ' ' . $a : '') . $tc . (false === $h ? '' : $h . '</' . $n . '>');
         }
         return $ret;
     }
@@ -303,7 +314,8 @@ abstract class Node implements \Iterator, \Countable
      */
     public function text($id = null)
     {
-        return html_entity_decode(strip_tags($this->html($id)), ENT_QUOTES); /* ??? */
+        $html = $this->html($id);
+        return !is_null($html) ? html_entity_decode(strip_tags($html), ENT_QUOTES) : ''; /* ??? */
     }
 
     /**
@@ -1046,9 +1058,9 @@ abstract class Node implements \Iterator, \Countable
     /**
      * Filter all ids of $el that are contained in(side) $this->ids
      *
-     * @param  hQuery_Node|array $el  A node or list of ids
-     * @param  boolean           $eq  if false, filter strict contents, otherwise $el might be in $this->ids
-     * @return hQuery_Node|array same type as $el
+     * @param  Node|array $el  A node or list of ids
+     * @param  boolean    $eq  if false, filter strict contents, otherwise $el might be in $this->ids
+     * @return Node|array same type as $el
      */
     public function _filter_contains($el, $eq = false)
     {
@@ -1136,14 +1148,22 @@ abstract class Node implements \Iterator, \Countable
     }
 
     // ------------------------------------------------------------------------
-    // Countable:
+    /**
+     * Countable
+     *
+     * {@inheritdoc}
+     */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return isset($this->ids) ? count($this->ids) : 0;
     }
 
     // ------------------------------------------------------------------------
-    // Iterable:
+    /**
+     * {@inheritdoc}
+     */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         $k = key($this->ids);
@@ -1154,29 +1174,50 @@ abstract class Node implements \Iterator, \Countable
         return array($k => $this->ids[$k]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    #[\ReturnTypeWillChange]
     public function valid()
     {
         return current($this->ids) !== false;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return key($this->ids);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    #[\ReturnTypeWillChange]
     public function next()
     {
-        return next($this->ids) !== false ? $this->current() : false;
+        if (is_array($this->ids) && !empty($this->ids) && next($this->ids) !== false) {
+            return $this->current();
+        }
+        return false;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    #[\ReturnTypeWillChange]
     public function prev()
     {
         return prev($this->ids) !== false ? $this->current() : false;
     }
 
     /**
+     * {@inheritdoc}
      * @return array
      */
+    #[\ReturnTypeWillChange]
     public function rewind()
     {
         reset($this->ids);
@@ -1327,7 +1368,6 @@ abstract class Node implements \Iterator, \Countable
             } elseif ($force_null) {
                 $ret[$k] = null;
             }
-
         }
         return $ret;
     }
@@ -1400,4 +1440,4 @@ abstract class Node implements \Iterator, \Countable
 
 // ------------------------------------------------------------------------
 // PSR-0 alias
-class_exists('hQuery_Node', false) or class_alias('duzun\\hQuery\\Node', 'hQuery_Node', false);
+// class_exists('hQuery_Node', false) or class_alias('duzun\\hQuery\\Node', 'hQuery_Node', false);

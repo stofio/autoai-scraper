@@ -1,4 +1,5 @@
 <?php
+
 namespace duzun\hQuery\Parser;
 
 use duzun\hQuery\Parser;
@@ -100,7 +101,7 @@ class HTML extends Parser
                 $e = $i++;
                 // open tag
                 if (!$isCloseTag) {
-                    $ids[$e]  = $e; // the end of tag attributs (>) and start of tag contents
+                    $ids[$e]  = $e; // the end of tag attributes (>) and start of tag contents
                     $tags[$e] = $n;
                     $b += $j + 1;
                     $b += strspn($html, " \n\r\t", $b);
@@ -114,7 +115,6 @@ class HTML extends Parser
                             } else {
                                 $attr[$at][] = $e;
                             }
-
                         }
                     }
                     // Not an empty tag
@@ -131,7 +131,7 @@ class HTML extends Parser
                     $n = strtolower($n);
                     $s = &$stack[$n];
                     if (empty($s)); // error - tag not opened, but closed - ???
-                    else{
+                    else {
                         $q = end($s);
                         $p = key($s);
                         unset($s[$p], $s);
@@ -223,7 +223,7 @@ class HTML extends Parser
                 return $i;
             }
 
-                           // If there is any quote before '>', make sure '>' is outside an attribute string
+            // If there is any quote before '>', make sure '>' is outside an attribute string
             $q = $str[$p]; // " | ' ?
 
             // next char after the quote
@@ -240,7 +240,6 @@ class HTML extends Parser
                 if ('>' == $str[$p]) {
                     return $p;
                 }
-
             }
             // else, its attr_value
             else {
@@ -346,7 +345,10 @@ class HTML extends Parser
         }
         $ret = array();
         foreach ($attr as $n => $v) {
-            $ret[] = $n . '=' . $quote . ($sq ? str_replace($quote, $sq, $v) : $v) . $quote;
+            $ret[] = $n . (isset($v)
+                ? '=' . $quote . ($sq ? str_replace($quote, $sq, $v) : $v) . $quote
+                : ''
+            );
         }
         return implode(' ', $ret);
     }

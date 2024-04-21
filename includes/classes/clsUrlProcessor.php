@@ -8,6 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class UrlProcessor {
 
+    public $table_name;
+
     public function __construct() {
         global $wpdb;
         $this->table_name = $wpdb->prefix . 'autoai_processed';
@@ -98,11 +100,15 @@ class UrlProcessor {
         
             $scrapingParsedUrl = parse_url($formattedUrl);
 
-            $baseUrl = rtrim($scrapingParsedUrl["scheme"] . '://' . $scrapingParsedUrl["host"], '/');
+            $baseUrl = false;
+            if (is_array($scrapingParsedUrl)) {
+                $baseUrl = rtrim($scrapingParsedUrl["scheme"] . '://' . $scrapingParsedUrl["host"], '/');
+            }
+              
             $inputBaseUrl = rtrim($parsedUrl["scheme"] . '://' . $parsedUrl["host"], '/');
         
             // Compare base URLs
-            if ($baseUrl !== $inputBaseUrl) {
+            if ( !$baseUrl || ( $baseUrl !== $inputBaseUrl) ) {
                 continue; // Skip if base URLs don't match
             }
             

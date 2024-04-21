@@ -10,6 +10,7 @@
  */
 register_activation_hook(__FILE__, 'scrapeai_activate');
 register_deactivation_hook(__FILE__, 'deactivate_cron_job');
+register_uninstall_hook( __FILE__, 'uninstall_delete_data' );
 
 add_action('init', 'register_all_ajax', 1);
 
@@ -87,6 +88,35 @@ function deactivate_cron_job() {
         }
     }
 }
+
+function uninstall_delete_data() {
+    // Check if the user confirmed to delete data
+    if ( ! isset( $_REQUEST['my_plugin_delete_data'] ) ) {
+      return;
+    }
+  
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'autoai_processed';
+    $wpdb->query( "DROP TABLE IF EXISTS $table_name" ); 
+  
+    delete_option( 'open_ai_key_option' );
+    delete_option( 'autoai_output_language' );
+    delete_option( 'times_a_day_run_cron' );
+
+    $sources_posts = get_posts(array(
+        'post_type' => 'sources_cpt',
+        'numberposts' => -1,
+        'post_status' => 'any'
+    ));
+
+    foreach ($sources_posts as $post) {
+        wp_delete_post($post->ID, true); 
+    }
+}
+
+function my_plugin_uninstall_confirmation() {
+    return isset( $_REQUEST['my_plugin_delete_data'] ) && $_REQUEST['my_plugin_delete_data'] === '1';
+  }
 
 function enqueue_source_cpt_script() {
     if ( is_single() && is_user_logged_in() ) {
@@ -289,40 +319,6 @@ function save_scrapeai_settings() {
     }
 }
 
-
-function OLDDDschedule_cron_jobs_for_sources() {
-    // first unschedule all existing cron jobs associated with 'custom_cron_hook'
-    for ($index = 0; $index <= 100; $index++) {
-        // Clear all scheduled events for the specified hook and index
-        wp_clear_scheduled_hook('autoai_cron_hook', array($index));
-    }
-
-
-    $timeADay = get_option('times_a_day_run_cron');
-    if($timeADay === null || $timeADay === '' || !$timeADay) {
-        $timeADay = 1;
-    }
-
-    // Calculate the interval between each cron job
-    $interval = intval(86400 / $timeADay); // 86400 seconds in a day, dividing by n for n times a day
-    $secInBetween = 0;
-
-    // Get sources
-    $sources = get_option('ai_scraper_websites', []);
-
-    // Loop through each source and schedule a cron job
-    for ($i = 1; $i <= $timeADay; $i++) {
-        foreach ($sources as $index => $source) {
-            if($source['runDaily'] === 'on') {
-                // Calculate the scheduled time for each of the runs
-                $scheduled_time = strtotime("today") + ($i * $interval) + ($index * $interval) + $secInBetween;
-
-                wp_schedule_event($scheduled_time, 'daily', 'autoai_cron_hook', array($index));
-                $secInBetween = $secInBetween + 120;    
-            }  
-        }
-    }
-}
 
 
 // Add a custom button to the admin bar

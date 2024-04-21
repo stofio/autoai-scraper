@@ -86,8 +86,8 @@ class ScrapaWebsite {
             $imageCredit = $sourceSettings['defaultImageCredit'] ?? "";
 
             //clean scraped content
-            $encodedContent = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
-            $contentFirstClean = $this->removeScriptTags($this->removeATags($encodedContent));
+            //$encodedContent = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
+            $contentFirstClean = $this->removeScriptTags($this->removeATags($content));
             $content1 = $this->cleanHtmlContent($contentFirstClean); // Method to clean the HTML content
             $content2 = $this->removeSpecificTags($content1);
             $content3 = $this->simplifyImg($content2);
@@ -97,7 +97,6 @@ class ScrapaWebsite {
             $content7 = $this->checkTablesInclusion($content6, $sourceSettings['getTables']);
             $content8 = $this->removeEmptyElements($content7);
             $content9 = $this->removeFirstImage($content8, $sourceSettings['excludeFirstImage']);
-
             
             return [
                 "title" => $title,
@@ -380,9 +379,9 @@ class ScrapaWebsite {
             foreach ($node->childNodes as $child) {
                 
                 if ($child instanceof DOMElement || $child instanceof DOMText) {
-                    if ($child->tagName === 'p' || $child->nodeName === '#text') {
+                    if ($child->nodeName  === 'p' || $child->nodeName === '#text') {
                         // Clone the <p> tag
-                        if($child->tagName === 'p') {
+                        if($child->nodeName === 'p') {
                             $newP = $newDom->importNode($child, false);
                             $body->appendChild($newP);
                         }
@@ -396,7 +395,7 @@ class ScrapaWebsite {
                         // Check for and move <img> tags
                         foreach ($child->childNodes as $pChild) {
                             
-                            if ($pChild instanceof DOMElement && $pChild->tagName === 'img') {
+                            if ($pChild instanceof DOMElement && $pChild->nodeName === 'img') {
                                 $newImg = $newDom->importNode($pChild, true);
                                 $body->appendChild($newImg);
                             } else {
@@ -404,7 +403,7 @@ class ScrapaWebsite {
                                 $newP->appendChild($newDom->importNode($pChild, true));
                             }
                         }
-                    } elseif (in_array($child->tagName, ['img', 'ul', 'ol', 'table', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'])) {
+                    } elseif (in_array($child->nodeName, ['img', 'ul', 'ol', 'table', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'])) {
                         // Directly clone other allowed tags
                         $newNode = $newDom->importNode($child, true);
                         $body->appendChild($newNode);

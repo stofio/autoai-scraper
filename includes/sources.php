@@ -177,7 +177,6 @@ function content_fetcher_scheduling_publishing_callback($post) {
     // Define the options for fetch times and post status
     $fetch_times_options = [1, 2, 3, 10, 30];
     $post_status_options = ['publish' => 'Publish', 'draft' => 'Draft'];
-var_dump($saved_fetch_interval);
     ?>
     <div>
 

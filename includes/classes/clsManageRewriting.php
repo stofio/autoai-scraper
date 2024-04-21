@@ -106,9 +106,9 @@ class clsManageRewriting {
     }
 
     private function divideScrapedContentByChunks($content, $wordLimit) {
-        $encodedContent = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
+      //  $encodedContent = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
         $dom = new DOMDocument();
-        @$dom->loadHTML($encodedContent);
+        @$dom->loadHTML($content);
         
 
         $chunks = $this->createChunks($dom, $wordLimit);
