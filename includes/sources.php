@@ -28,7 +28,7 @@ function content_fetcher_add_meta_boxes() {
     // Web Scraping Specific Fields
     add_meta_box(
         'content_fetcher_web_scraping', 
-        'Web Scraping Specific Fields', 
+        'Source URL and article CSS selectors', 
         'content_fetcher_web_scraping_callback', 
         'sources_cpt', 
         'normal', 
@@ -65,7 +65,7 @@ function content_fetcher_add_meta_boxes() {
         'default'
     );
 
-    //Category
+    // Category
     add_meta_box(
         'content_fetcher_category',          
         'Category to save',      

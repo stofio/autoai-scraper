@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Auto AI-Rewriting with Scraping
+ * Plugin Name: Wordpress GPT Rewriter
  * Plugin URI: #
- * Description: This plugin scrapes from selected URLs/sources, rewrites the articles with AI and creates new posts
+ * Description: Scrape and rewrite with AI content from the web. Control the prompts and set schedules.
  * Version: 1.0.0
  * Author: Dejan Manasijevski
  * License: GPL-2.0+
